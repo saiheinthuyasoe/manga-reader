@@ -1,36 +1,174 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Manga Reader
+
+A modern manga reader web application built with Next.js 16 and Firebase, inspired by MangaReader.to.
+
+## Features
+
+- 📚 Browse thousands of manga titles
+- 🔥 Trending and popular manga sections
+- 🎨 Beautiful, responsive UI with dark theme
+- 📖 Smooth reading experience with page navigation
+- 🔖 Bookmark your favorite manga (coming soon)
+- 👤 User authentication with Firebase (coming soon)
+- 🔍 Search and filter manga by genres
+- 📱 Mobile-friendly design
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Backend**: Firebase (Firestore, Authentication, Storage)
+- **Icons**: Lucide React
+- **Deployment**: Vercel (recommended)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ installed
+- Firebase project set up
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <your-repo-url>
+cd manga-reader
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Set up Firebase:
+
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project
+   - Enable Firestore Database
+   - Enable Authentication (optional)
+   - Enable Storage (for manga images)
+   - Copy your Firebase config
+
+4. Create a `.env.local` file in the root directory and add your Firebase credentials:
+
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain_here
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id_here
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket_here
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id_here
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id_here
+```
+
+5. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Firebase Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Firestore Database Structure
 
-## Learn More
+```
+mangas/
+  {mangaId}/
+    - title: string
+    - description: string
+    - coverImage: string
+    - bannerImage: string (optional)
+    - author: string
+    - artist: string (optional)
+    - status: 'ongoing' | 'completed' | 'hiatus'
+    - genres: string[]
+    - rating: number
+    - views: number
+    - chapters: Chapter[]
+    - createdAt: timestamp
+    - updatedAt: timestamp
 
-To learn more about Next.js, take a look at the following resources:
+users/
+  {userId}/
+    - email: string
+    - displayName: string
+    - photoURL: string (optional)
+    - bookmarks: string[]
+    - readingHistory: ReadingHistory[]
+    - createdAt: timestamp
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Firestore Security Rules (Example)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read access to all manga
+    match /mangas/{mangaId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
 
-## Deploy on Vercel
+    // Users can only read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── manga/[id]/        # Manga detail page
+│   ├── read/[mangaId]/[chapterId]/  # Reading page
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Home page
+│   └── globals.css        # Global styles
+├── components/
+│   ├── MangaCard.tsx      # Manga card component
+│   ├── Navbar.tsx         # Navigation bar
+│   ├── Footer.tsx         # Footer component
+│   └── Loading.tsx        # Loading component
+├── lib/
+│   ├── firebase.ts        # Firebase configuration
+│   └── db.ts              # Database helper functions
+└── types/
+    └── manga.ts           # TypeScript interfaces
+```
+
+## Features to Implement
+
+- [ ] User authentication (Sign up, Sign in, Profile)
+- [ ] Bookmark functionality
+- [ ] Reading history tracking
+- [ ] Comments and ratings
+- [ ] Advanced search with filters
+- [ ] Admin panel for managing manga
+- [ ] Reading progress sync across devices
+- [ ] Dark/Light theme toggle
+- [ ] Multiple reading modes (single page, double page, continuous scroll)
+- [ ] Keyboard shortcuts for navigation
+- [ ] Offline reading support (PWA)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is for educational purposes only.
+
+## Acknowledgments
+
+- Inspired by [MangaReader.to](https://mangareader.to/)
+- Built with [Next.js](https://nextjs.org/)
+- Powered by [Firebase](https://firebase.google.com/)
