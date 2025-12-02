@@ -8,12 +8,14 @@ export interface Manga {
   author: string;
   artist?: string;
   status: "ongoing" | "completed" | "hiatus";
+  type: string[]; // Manga, Manhwa, Manhua, etc.
   genres: string[];
   rating: number;
   views: number;
   chapters: Chapter[];
   createdAt: Date;
   updatedAt: Date;
+  createdBy?: string; // User ID of the translator/admin who created this manga
 }
 
 export interface Chapter {

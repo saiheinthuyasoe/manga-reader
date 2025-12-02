@@ -15,6 +15,7 @@ interface Manga {
   author: string;
   description: string;
   coverImage: string;
+  type: string[];
   genres: string[];
   status: string;
 }
@@ -28,11 +29,18 @@ export default function BrowsePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string>("All");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
+  const [selectedType, setSelectedType] = useState<string>("All");
 
   // Get all unique genres from mangas
   const allGenres = [
     "All",
     ...new Set(mangas.flatMap((manga) => manga.genres)),
+  ];
+
+  // Get all unique types from mangas
+  const allTypes = [
+    "All",
+    ...new Set(mangas.flatMap((manga) => manga.type || [])),
   ];
 
   // Set search query from URL parameter
@@ -88,8 +96,13 @@ export default function BrowsePage() {
       filtered = filtered.filter((manga) => manga.status === selectedStatus);
     }
 
+    // Filter by type
+    if (selectedType !== "All") {
+      filtered = filtered.filter((manga) => manga.type?.includes(selectedType));
+    }
+
     setFilteredMangas(filtered);
-  }, [searchQuery, selectedGenre, selectedStatus, mangas]);
+  }, [searchQuery, selectedGenre, selectedStatus, selectedType, mangas]);
 
   if (loading || loadingMangas) {
     return <Loading />;
@@ -110,7 +123,7 @@ export default function BrowsePage() {
 
         {/* Filters */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div>
               <label className="text-sm text-zinc-400 mb-2 block">Search</label>
@@ -121,6 +134,22 @@ export default function BrowsePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
               />
+            </div>
+
+            {/* Type Filter */}
+            <div>
+              <label className="text-sm text-zinc-400 mb-2 block">Type</label>
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+              >
+                {allTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Genre Filter */}
@@ -157,7 +186,8 @@ export default function BrowsePage() {
           {/* Active Filters Info */}
           {(searchQuery ||
             selectedGenre !== "All" ||
-            selectedStatus !== "All") && (
+            selectedStatus !== "All" ||
+            selectedType !== "All") && (
             <div className="mt-4 pt-4 border-t border-zinc-800">
               <p className="text-sm text-zinc-400">
                 Showing {filteredMangas.length} of {mangas.length} manga

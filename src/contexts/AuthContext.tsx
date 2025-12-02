@@ -97,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasMembership = user ? hasActiveMembership(user) : false;
   const isAdmin = user ? isUserAdmin(user) : false;
+  const isTranslator = user ? user.role === "translator" : false;
 
   const value: AuthContextType = {
     user,
@@ -108,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserProfile,
     hasMembership,
     isAdmin,
+    isTranslator,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

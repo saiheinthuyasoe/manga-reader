@@ -13,7 +13,7 @@ import Loading from "@/components/Loading";
 export default function EditChapterPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { user, loading: authLoading, isAdmin, isTranslator } = useAuth();
   const mangaId = params.id as string;
   const chapterId = params.chapterId as string;
 
@@ -32,10 +32,10 @@ export default function EditChapterPage() {
 
   // Redirect if not admin
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
+    if (!authLoading && (!user || (!isAdmin && !isTranslator))) {
       router.push("/");
     }
-  }, [user, isAdmin, authLoading, router]);
+  }, [user, isAdmin, isTranslator, authLoading, router]);
 
   // Load manga and chapter data
   useEffect(() => {
@@ -49,6 +49,14 @@ export default function EditChapterPage() {
         }
 
         const mangaData = { id: mangaDoc.id, ...mangaDoc.data() };
+
+        // Check ownership for translators
+        if (isTranslator && !isAdmin && mangaData.createdBy !== user?.uid) {
+          alert("You don't have permission to edit this chapter");
+          router.push("/admin/manga");
+          return;
+        }
+
         setManga(mangaData);
 
         const chapter = mangaData.chapters?.find(
@@ -148,7 +156,7 @@ export default function EditChapterPage() {
     return <Loading />;
   }
 
-  if (!user || !isAdmin) {
+  if (!user || (!isAdmin && !isTranslator)) {
     return null;
   }
 

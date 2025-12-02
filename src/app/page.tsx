@@ -29,7 +29,7 @@ export default function Home() {
     window.addEventListener("beforeinstallprompt", handler);
 
     return () => {
-      mediaQuery.removeEventListener("change", updateStandalone);
+       mediaQuery.removeEventListener("change", updateStandalone);
       window.removeEventListener("beforeinstallprompt", handler);
     };
   }, []);

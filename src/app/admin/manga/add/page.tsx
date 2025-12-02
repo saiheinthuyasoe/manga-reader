@@ -10,7 +10,7 @@ import { Manga } from "@/types/manga";
 
 export default function AddMangaPage() {
   const router = useRouter();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isTranslator } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,18 +21,19 @@ export default function AddMangaPage() {
     author: "",
     artist: "",
     status: "ongoing" as "ongoing" | "completed" | "hiatus",
+    type: "",
     genres: "",
     coverImage: "",
     bannerImage: "",
   });
 
   useEffect(() => {
-    if (!user || !isAdmin) {
+    if (!user || (!isAdmin && !isTranslator)) {
       router.push("/");
     }
-  }, [user, isAdmin, router]);
+  }, [user, isAdmin, isTranslator, router]);
 
-  if (!user || !isAdmin) {
+  if (!user || (!isAdmin && !isTranslator)) {
     return null;
   }
 
@@ -60,6 +61,10 @@ export default function AddMangaPage() {
         author: formData.author,
         artist: formData.artist || formData.author,
         status: formData.status,
+        type: formData.type
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t),
         genres: formData.genres
           .split(",")
           .map((g) => g.trim())
@@ -69,6 +74,7 @@ export default function AddMangaPage() {
         chapters: [],
         createdAt: new Date(),
         updatedAt: new Date(),
+        createdBy: user.uid, // Track who created this manga
       };
 
       await addManga(mangaData);
@@ -327,19 +333,36 @@ export default function AddMangaPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Genres * (comma separated)
+                  Type * (comma separated)
                 </label>
                 <input
                   type="text"
                   required
-                  value={formData.genres}
+                  value={formData.type}
                   onChange={(e) =>
-                    setFormData({ ...formData, genres: e.target.value })
+                    setFormData({ ...formData, type: e.target.value })
                   }
                   className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Action, Adventure, Fantasy"
+                  placeholder="e.g., Manga, Manhwa, Manhua"
                 />
               </div>
+            </div>
+
+            {/* Genres */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Genres * (comma separated)
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.genres}
+                onChange={(e) =>
+                  setFormData({ ...formData, genres: e.target.value })
+                }
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="e.g., Action, Adventure, Fantasy"
+              />
             </div>
 
             {/* Submit Buttons */}

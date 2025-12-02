@@ -1,5 +1,5 @@
 export type AccountType = "free" | "membership";
-export type UserRole = "user" | "admin";
+export type UserRole = "user" | "translator" | "admin";
 
 export interface UserProfile {
   uid: string;
@@ -37,4 +37,5 @@ export interface AuthContextType {
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
   hasMembership: boolean;
   isAdmin: boolean;
+  isTranslator: boolean;
 }

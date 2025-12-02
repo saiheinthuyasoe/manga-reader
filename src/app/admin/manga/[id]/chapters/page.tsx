@@ -18,26 +18,33 @@ import { Manga } from "@/types/manga";
 export default function MangaChaptersPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isTranslator } = useAuth();
   const [manga, setManga] = useState<Manga | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !isAdmin) {
+    if (!user || (!isAdmin && !isTranslator)) {
       router.push("/");
     }
-  }, [user, isAdmin, router]);
+  }, [user, isAdmin, isTranslator, router]);
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user && (isAdmin || isTranslator)) {
       loadManga();
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, isTranslator]);
 
   const loadManga = async () => {
     try {
       setLoading(true);
       const data = await getMangaById(params.id as string);
+
+      // Check ownership for translators
+      if (data && isTranslator && !isAdmin && data.createdBy !== user?.uid) {
+        router.push("/admin/manga");
+        return;
+      }
+
       setManga(data);
     } catch (error) {
       console.error("Failed to load manga:", error);
@@ -46,7 +53,7 @@ export default function MangaChaptersPage() {
     }
   };
 
-  if (!user || !isAdmin) {
+  if (!user || (!isAdmin && !isTranslator)) {
     return null;
   }
 

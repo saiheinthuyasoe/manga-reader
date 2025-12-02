@@ -146,12 +146,21 @@ export default async function MangaDetailPage({
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
-              <Link
-                href={`/read/${manga.id}/${manga.chapters[0].id}`}
-                className="px-6 sm:px-8 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition text-center text-sm sm:text-base"
-              >
-                Read Now
-              </Link>
+              {manga.chapters && manga.chapters.length > 0 ? (
+                <Link
+                  href={`/read/${manga.id}/${manga.chapters[0].id}`}
+                  className="px-6 sm:px-8 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition text-center text-sm sm:text-base"
+                >
+                  Read Now
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="px-6 sm:px-8 py-2.5 sm:py-3 bg-zinc-700 text-zinc-400 rounded-lg font-semibold text-center text-sm sm:text-base cursor-not-allowed"
+                >
+                  No Chapters Available
+                </button>
+              )}
               <BookmarkButton mangaId={manga.id} />
               <button className="px-4 sm:px-6 py-2.5 sm:py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg flex items-center justify-center gap-2 transition text-sm sm:text-base">
                 <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />

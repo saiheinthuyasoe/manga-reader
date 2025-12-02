@@ -7,26 +7,66 @@ import { BookOpen, PlusCircle, Edit, Trash2, Eye, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllManga, deleteManga } from "@/lib/db";
 import { Manga } from "@/types/manga";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 
 export default function ManageMangaPage() {
   const router = useRouter();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isTranslator } = useAuth();
   const [mangas, setMangas] = useState<Manga[]>([]);
   const [filteredMangas, setFilteredMangas] = useState<Manga[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [userMap, setUserMap] = useState<
+    Record<string, { name: string; email: string }>
+  >({});
 
   useEffect(() => {
-    if (!user || !isAdmin) {
+    if (!user || (!isAdmin && !isTranslator)) {
       router.push("/");
+      return;
     }
-  }, [user, isAdmin, router]);
 
-  useEffect(() => {
-    if (user && isAdmin) {
-      loadMangas();
-    }
-  }, [user, isAdmin]);
+    // Set up real-time listener for mangas collection
+    const mangasCollection = collection(db, "mangas");
+    const unsubscribe = onSnapshot(mangasCollection, async (snapshot) => {
+      const mangasData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Manga[];
+
+      // Fetch users data if admin
+      if (isAdmin) {
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        const users: Record<string, { name: string; email: string }> = {};
+        usersSnapshot.forEach((doc) => {
+          const userData = doc.data();
+          users[doc.id] = {
+            name: userData.name || userData.email || "Unknown",
+            email: userData.email || "",
+          };
+        });
+        setUserMap(users);
+      }
+
+      // Filter manga based on user role
+      let filteredData = mangasData;
+      if (isTranslator && !isAdmin && user) {
+        // Translators can only see manga they created
+        filteredData = mangasData.filter(
+          (manga) => manga.createdBy === user.uid
+        );
+      }
+      // Admins see all manga
+
+      setMangas(filteredData);
+      setFilteredMangas(filteredData);
+      setLoading(false);
+    });
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
+  }, [user, isAdmin, isTranslator, router]);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -44,19 +84,6 @@ export default function ManageMangaPage() {
     }
   }, [searchQuery, mangas]);
 
-  const loadMangas = async () => {
-    try {
-      setLoading(true);
-      const data = await getAllManga();
-      setMangas(data);
-      setFilteredMangas(data);
-    } catch (error) {
-      console.error("Failed to load mangas:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) {
       return;
@@ -71,7 +98,7 @@ export default function ManageMangaPage() {
     }
   };
 
-  if (!user || !isAdmin) {
+  if (!user || (!isAdmin && !isTranslator)) {
     return null;
   }
 
@@ -146,6 +173,11 @@ export default function ManageMangaPage() {
                     <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                       Views
                     </th>
+                    {isAdmin && (
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                        Owner
+                      </th>
+                    )}
                     <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                       Actions
                     </th>
@@ -204,6 +236,13 @@ export default function ManageMangaPage() {
                       <td className="px-6 py-4 text-zinc-300">
                         {manga.views.toLocaleString()}
                       </td>
+                      {isAdmin && (
+                        <td className="px-6 py-4 text-zinc-300">
+                          {manga.createdBy && userMap[manga.createdBy]
+                            ? userMap[manga.createdBy].name
+                            : "Unknown"}
+                        </td>
+                      )}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <Link

@@ -11,7 +11,7 @@ import { Manga } from "@/types/manga";
 export default function EditMangaPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isTranslator } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loadingManga, setLoadingManga] = useState(true);
   const [error, setError] = useState("");
@@ -29,16 +29,16 @@ export default function EditMangaPage() {
   });
 
   useEffect(() => {
-    if (!user || !isAdmin) {
+    if (!user || (!isAdmin && !isTranslator)) {
       router.push("/");
     }
-  }, [user, isAdmin, router]);
+  }, [user, isAdmin, isTranslator, router]);
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user && (isAdmin || isTranslator)) {
       loadManga();
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, isTranslator]);
 
   const loadManga = async () => {
     try {
@@ -47,6 +47,12 @@ export default function EditMangaPage() {
 
       if (!manga) {
         setError("Manga not found");
+        return;
+      }
+
+      // Check ownership for translators
+      if (isTranslator && !isAdmin && manga.createdBy !== user?.uid) {
+        setError("You don't have permission to edit this manga");
         return;
       }
 
@@ -110,7 +116,7 @@ export default function EditMangaPage() {
     }
   };
 
-  if (!user || !isAdmin) {
+  if (!user || (!isAdmin && !isTranslator)) {
     return null;
   }
 

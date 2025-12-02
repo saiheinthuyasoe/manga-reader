@@ -12,7 +12,7 @@ import { Manga } from "@/types/manga";
 export default function AddChapterPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isTranslator } = useAuth();
   const [manga, setManga] = useState<Manga | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingManga, setLoadingManga] = useState(true);
@@ -28,21 +28,28 @@ export default function AddChapterPage() {
   });
 
   useEffect(() => {
-    if (!user || !isAdmin) {
+    if (!user || (!isAdmin && !isTranslator)) {
       router.push("/");
     }
-  }, [user, isAdmin, router]);
+  }, [user, isAdmin, isTranslator, router]);
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user && (isAdmin || isTranslator)) {
       loadManga();
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, isTranslator]);
 
   const loadManga = async () => {
     try {
       setLoadingManga(true);
       const data = await getMangaById(params.id as string);
+
+      // Check ownership for translators
+      if (data && isTranslator && !isAdmin && data.createdBy !== user?.uid) {
+        router.push("/admin/manga");
+        return;
+      }
+
       setManga(data);
 
       // Auto-suggest next chapter number
@@ -120,7 +127,7 @@ export default function AddChapterPage() {
     }));
   };
 
-  if (!user || !isAdmin) {
+  if (!user || (!isAdmin && !isTranslator)) {
     return null;
   }
 

@@ -17,7 +17,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
-  const { user, signOut, hasMembership, isAdmin } = useAuth();
+  const { user, signOut, hasMembership, isAdmin, isTranslator } = useAuth();
   const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -187,6 +187,19 @@ export default function Navbar() {
                       </>
                     )}
 
+                    {isTranslator && !isAdmin && (
+                      <>
+                        <Link
+                          href="/admin/manga"
+                          className="flex items-center gap-2 px-4 py-2 text-green-400 hover:bg-zinc-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          Manage Manga
+                        </Link>
+                      </>
+                    )}
+
                     <button
                       onClick={handleSignOut}
                       className="w-full flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-zinc-700 transition"
@@ -321,6 +334,19 @@ export default function Navbar() {
                       >
                         <Users className="w-4 h-4" />
                         Manage Users
+                      </Link>
+                    </>
+                  )}
+
+                  {isTranslator && !isAdmin && (
+                    <>
+                      <Link
+                        href="/admin/manga"
+                        className="flex items-center gap-2 px-4 py-2 text-green-400 hover:bg-zinc-800 transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        Manage Manga
                       </Link>
                     </>
                   )}
