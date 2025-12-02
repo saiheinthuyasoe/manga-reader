@@ -27,6 +27,7 @@ export default function EditChapterPage() {
     pagesEN: [] as string[],
     pagesMM: [] as string[],
     isFree: false,
+    coinPrice: 0,
     publishDate: new Date().toISOString().slice(0, 16),
   });
 
@@ -74,6 +75,7 @@ export default function EditChapterPage() {
           pagesEN: chapter.pagesEN || [],
           pagesMM: chapter.pagesMM || [],
           isFree: chapter.isFree || false,
+          coinPrice: chapter.coinPrice || 0,
           publishDate: chapter.publishedAt
             ? new Date(
                 chapter.publishedAt.seconds
@@ -118,6 +120,7 @@ export default function EditChapterPage() {
               pagesEN: formData.pagesEN,
               pagesMM: formData.pagesMM,
               isFree: formData.isFree,
+              coinPrice: formData.coinPrice,
               publishedAt: new Date(formData.publishDate),
             }
           : ch
@@ -251,6 +254,47 @@ export default function EditChapterPage() {
                   </p>
                 </div>
               </label>
+            </div>
+
+            {/* Coin Price */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Coin Price
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={formData.coinPrice}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    coinPrice: parseInt(e.target.value) || 0,
+                  })
+                }
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="0"
+              />
+              <p className="text-xs text-zinc-500 mt-2">
+                Set to 0 for free access with membership. Free users can
+                purchase with coins if price is set.
+                {!formData.isFree && formData.coinPrice > 0 && (
+                  <span className="block mt-1 text-yellow-500">
+                    ⚠️ Free users must pay {formData.coinPrice} coins. Members
+                    can read for free.
+                  </span>
+                )}
+                {!formData.isFree && formData.coinPrice === 0 && (
+                  <span className="block mt-1 text-green-500">
+                    ✓ Members only - Free users cannot access.
+                  </span>
+                )}
+                {formData.isFree && (
+                  <span className="block mt-1 text-blue-500">
+                    ✓ Everyone can read for free.
+                  </span>
+                )}
+              </p>
             </div>
 
             {/* English Pages Upload */}

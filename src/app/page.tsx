@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { Download } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Home() {
+  const { t } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
 
@@ -29,7 +31,7 @@ export default function Home() {
     window.addEventListener("beforeinstallprompt", handler);
 
     return () => {
-       mediaQuery.removeEventListener("change", updateStandalone);
+      mediaQuery.removeEventListener("change", updateStandalone);
       window.removeEventListener("beforeinstallprompt", handler);
     };
   }, []);
@@ -75,12 +77,10 @@ export default function Home() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6">
-              Discover Your Next{" "}
-              <span className="text-green-500">Adventure</span>
+              {t("welcomeTitle")}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-zinc-300 mb-6 sm:mb-8">
-              Read thousands of manga titles for free. Updated daily with the
-              latest chapters.
+              {t("welcomeSubtitle")}
             </p>
             <button
               onClick={handleInstall}
@@ -90,7 +90,7 @@ export default function Home() {
               {isStandalone
                 ? "Refresh App"
                 : deferredPrompt
-                ? "Install App"
+                ? t("install")
                 : "Open App"}
             </button>
           </div>

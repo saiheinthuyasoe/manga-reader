@@ -8,8 +8,10 @@ export interface UserProfile {
   photoURL?: string;
   accountType: AccountType;
   role: UserRole;
+  coins: number; // Coins for purchasing premium chapters
   bookmarks: string[];
   readingHistory: ReadingHistory[];
+  purchasedChapters: string[]; // Array of chapter IDs that user has purchased
   createdAt: Date;
   updatedAt: Date;
   membershipStartDate?: Date;

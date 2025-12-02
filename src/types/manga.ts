@@ -26,6 +26,7 @@ export interface Chapter {
   pagesMM: string[];
   publishedAt: Date;
   isFree?: boolean; // If true, free accounts can read this chapter
+  coinPrice?: number; // Price in coins to unlock this chapter (0 or undefined = free for members)
 }
 
 export interface User {

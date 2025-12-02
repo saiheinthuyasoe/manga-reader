@@ -25,8 +25,10 @@ export async function createUserProfile(
     displayName,
     accountType: "free", // Default to free account
     role: "user", // Default to user role
+    coins: 0, // Default coins
     bookmarks: [],
     readingHistory: [],
+    purchasedChapters: [], // Default empty purchased chapters
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -116,14 +118,14 @@ export async function signOutUser(): Promise<void> {
 // Sign in with Google
 export async function signInWithGoogle(): Promise<UserProfile> {
   const provider = new GoogleAuthProvider();
-  
+
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    
+
     // Check if user profile exists
     let userProfile = await getUserProfile(user.uid);
-    
+
     if (!userProfile) {
       // Create new profile for Google user
       userProfile = await createUserProfile(
@@ -132,17 +134,17 @@ export async function signInWithGoogle(): Promise<UserProfile> {
         user.displayName || user.email?.split("@")[0] || "User"
       );
     }
-    
+
     return userProfile;
   } catch (error: any) {
     // Handle account exists with different credential
     if (error.code === "auth/account-exists-with-different-credential") {
       const email = error.customData?.email;
-      
+
       if (email) {
         // Get existing sign-in methods for this email
         const methods = await fetchSignInMethodsForEmail(auth, email);
-        
+
         if (methods.includes("password")) {
           // Account exists with email/password
           // User needs to sign in with password first to link accounts
@@ -152,7 +154,7 @@ export async function signInWithGoogle(): Promise<UserProfile> {
         }
       }
     }
-    
+
     throw error;
   }
 }
@@ -164,7 +166,7 @@ export async function linkGoogleAccount(): Promise<void> {
   }
 
   const provider = new GoogleAuthProvider();
-  
+
   try {
     await linkWithCredential(auth.currentUser, provider as any);
   } catch (error: any) {

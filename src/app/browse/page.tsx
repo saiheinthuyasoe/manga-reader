@@ -6,6 +6,7 @@ import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import Loading from "@/components/Loading";
 import { useSearchParams } from "next/navigation";
 
@@ -22,6 +23,7 @@ interface Manga {
 
 export default function BrowsePage() {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [mangas, setMangas] = useState<Manga[]>([]);
   const [filteredMangas, setFilteredMangas] = useState<Manga[]>([]);
@@ -114,10 +116,10 @@ export default function BrowsePage() {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
-            Browse Manga
+            {t("browseManga")}
           </h1>
           <p className="text-sm sm:text-base text-zinc-400">
-            Explore our collection of {mangas.length} manga titles
+            {t("exploreCollection")} {mangas.length} {t("mangaTitles")}
           </p>
         </div>
 
@@ -126,10 +128,12 @@ export default function BrowsePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div>
-              <label className="text-sm text-zinc-400 mb-2 block">Search</label>
+              <label className="text-sm text-zinc-400 mb-2 block">
+                {t("search")}
+              </label>
               <input
                 type="text"
-                placeholder="Search by title or author..."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
@@ -138,7 +142,9 @@ export default function BrowsePage() {
 
             {/* Type Filter */}
             <div>
-              <label className="text-sm text-zinc-400 mb-2 block">Type</label>
+              <label className="text-sm text-zinc-400 mb-2 block">
+                {t("type")}
+              </label>
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
@@ -154,7 +160,9 @@ export default function BrowsePage() {
 
             {/* Genre Filter */}
             <div>
-              <label className="text-sm text-zinc-400 mb-2 block">Genre</label>
+              <label className="text-sm text-zinc-400 mb-2 block">
+                {t("genre")}
+              </label>
               <select
                 value={selectedGenre}
                 onChange={(e) => setSelectedGenre(e.target.value)}
@@ -170,15 +178,17 @@ export default function BrowsePage() {
 
             {/* Status Filter */}
             <div>
-              <label className="text-sm text-zinc-400 mb-2 block">Status</label>
+              <label className="text-sm text-zinc-400 mb-2 block">
+                {t("status")}
+              </label>
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
               >
-                <option value="All">All</option>
-                <option value="Ongoing">Ongoing</option>
-                <option value="Completed">Completed</option>
+                <option value="All">{t("all")}</option>
+                <option value="Ongoing">{t("ongoing")}</option>
+                <option value="Completed">{t("completed")}</option>
               </select>
             </div>
           </div>
@@ -190,7 +200,8 @@ export default function BrowsePage() {
             selectedType !== "All") && (
             <div className="mt-4 pt-4 border-t border-zinc-800">
               <p className="text-sm text-zinc-400">
-                Showing {filteredMangas.length} of {mangas.length} manga
+                {t("showing")} {filteredMangas.length} {t("of")} {mangas.length}{" "}
+                {t("manga")}
               </p>
             </div>
           )}
@@ -247,9 +258,9 @@ export default function BrowsePage() {
           </div>
         ) : (
           <div className="text-center py-16">
-            <p className="text-zinc-400 text-lg">No manga found</p>
+            <p className="text-zinc-400 text-lg">{t("noMangaFound")}</p>
             <p className="text-zinc-500 text-sm mt-2">
-              Try adjusting your filters or search query
+              {t("tryAdjustingFilters")}
             </p>
           </div>
         )}

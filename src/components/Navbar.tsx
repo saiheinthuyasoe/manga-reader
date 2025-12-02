@@ -11,19 +11,26 @@ import {
   Shield,
   Crown,
   Users,
+  Languages,
+  ChevronDown,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const { user, signOut, hasMembership, isAdmin, isTranslator } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -37,16 +44,22 @@ export default function Navbar() {
       ) {
         setShowMobileMenu(false);
       }
+      if (
+        langMenuRef.current &&
+        !langMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowLangMenu(false);
+      }
     };
 
-    if (showUserMenu || showMobileMenu) {
+    if (showUserMenu || showMobileMenu || showLangMenu) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showUserMenu, showMobileMenu]);
+  }, [showUserMenu, showMobileMenu, showLangMenu]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -87,7 +100,7 @@ export default function Navbar() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search manga..."
+                placeholder={t("search")}
                 className="w-full bg-zinc-800 text-white rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </form>
@@ -105,14 +118,14 @@ export default function Navbar() {
               href="/browse"
               className="text-zinc-300 hover:text-white transition"
             >
-              Browse
+              {t("browse")}
             </Link>
             {user && (
               <Link
                 href="/bookmarks"
                 className="text-zinc-300 hover:text-white transition"
               >
-                Bookmarks
+                {t("bookmarks")}
               </Link>
             )}
 
@@ -136,7 +149,7 @@ export default function Navbar() {
                         {user.displayName}
                       </p>
                       <p className="text-zinc-400 text-sm">{user.email}</p>
-                      <div className="mt-2">
+                      <div className="mt-2 flex items-center gap-2">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             hasMembership
@@ -144,7 +157,11 @@ export default function Navbar() {
                               : "bg-zinc-700 text-zinc-400"
                           }`}
                         >
-                          {hasMembership ? "Member" : "Free Account"}
+                          {hasMembership ? t("member") : t("freeAccount")}
+                        </span>
+                        <span className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-medium">
+                          <Coins className="w-3 h-3" />
+                          {user.coins || 0}
                         </span>
                       </div>
                     </div>
@@ -155,7 +172,7 @@ export default function Navbar() {
                       onClick={() => setShowUserMenu(false)}
                     >
                       <User className="w-4 h-4" />
-                      Profile
+                      {t("profile")}
                     </Link>
 
                     {isAdmin && (
@@ -166,7 +183,7 @@ export default function Navbar() {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <Shield className="w-4 h-4" />
-                          Admin Dashboard
+                          {t("adminDashboard")}
                         </Link>
                         <Link
                           href="/admin/manga"
@@ -174,7 +191,7 @@ export default function Navbar() {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <BookOpen className="w-4 h-4" />
-                          Manage Manga
+                          {t("manageManga")}
                         </Link>
                         <Link
                           href="/admin/users"
@@ -182,7 +199,7 @@ export default function Navbar() {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <Users className="w-4 h-4" />
-                          Manage Users
+                          {t("manageUsers")}
                         </Link>
                       </>
                     )}
@@ -195,17 +212,54 @@ export default function Navbar() {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <BookOpen className="w-4 h-4" />
-                          Manage Manga
+                          {t("manageManga")}
                         </Link>
                       </>
                     )}
 
+                    {/* Language Selector */}
+                    <div className="border-t border-zinc-800 pt-2 mt-2">
+                      <div className="px-4 py-2">
+                        <p className="text-xs text-zinc-500 mb-2">
+                          {t("language")}
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setLanguage("EN");
+                              setShowUserMenu(false);
+                            }}
+                            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition ${
+                              language === "EN"
+                                ? "bg-green-600 text-white"
+                                : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
+                            }`}
+                          >
+                            EN
+                          </button>
+                          <button
+                            onClick={() => {
+                              setLanguage("MM");
+                              setShowUserMenu(false);
+                            }}
+                            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition ${
+                              language === "MM"
+                                ? "bg-green-600 text-white"
+                                : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
+                            }`}
+                          >
+                            MM
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
                     <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-zinc-700 transition"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-zinc-700 transition border-t border-zinc-800"
                     >
                       <LogOut className="w-4 h-4" />
-                      Sign Out
+                      {t("signOut")}
                     </button>
                   </div>
                 )}
@@ -216,7 +270,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
               >
                 <User className="w-4 h-4" />
-                <span>Sign In</span>
+                <span>{t("signIn")}</span>
               </Link>
             )}
           </div>
@@ -245,7 +299,7 @@ export default function Navbar() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search manga..."
+                  placeholder={t("search")}
                   className="w-full bg-zinc-800 text-white rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </form>
@@ -265,7 +319,7 @@ export default function Navbar() {
                 className="block px-4 py-2 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
                 onClick={() => setShowMobileMenu(false)}
               >
-                Browse
+                {t("browse")}
               </Link>
               {user && (
                 <Link
@@ -273,7 +327,7 @@ export default function Navbar() {
                   className="block px-4 py-2 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
                   onClick={() => setShowMobileMenu(false)}
                 >
-                  Bookmarks
+                  {t("bookmarks")}
                 </Link>
               )}
 
@@ -287,7 +341,7 @@ export default function Navbar() {
                       )}
                     </p>
                     <p className="text-zinc-400 text-sm">{user.email}</p>
-                    <div className="mt-2">
+                    <div className="mt-2 flex items-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           hasMembership
@@ -295,7 +349,11 @@ export default function Navbar() {
                             : "bg-zinc-700 text-zinc-400"
                         }`}
                       >
-                        {hasMembership ? "Member" : "Free Account"}
+                        {hasMembership ? t("member") : t("freeAccount")}
+                      </span>
+                      <span className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-medium">
+                        <Coins className="w-3 h-3" />
+                        {user.coins || 0}
                       </span>
                     </div>
                   </div>
@@ -306,7 +364,7 @@ export default function Navbar() {
                     onClick={() => setShowMobileMenu(false)}
                   >
                     <User className="w-4 h-4" />
-                    Profile
+                    {t("profile")}
                   </Link>
 
                   {isAdmin && (
@@ -317,7 +375,7 @@ export default function Navbar() {
                         onClick={() => setShowMobileMenu(false)}
                       >
                         <Shield className="w-4 h-4" />
-                        Admin Dashboard
+                        {t("adminDashboard")}
                       </Link>
                       <Link
                         href="/admin/manga"
@@ -325,7 +383,7 @@ export default function Navbar() {
                         onClick={() => setShowMobileMenu(false)}
                       >
                         <BookOpen className="w-4 h-4" />
-                        Manage Manga
+                        {t("manageManga")}
                       </Link>
                       <Link
                         href="/admin/users"
@@ -333,7 +391,7 @@ export default function Navbar() {
                         onClick={() => setShowMobileMenu(false)}
                       >
                         <Users className="w-4 h-4" />
-                        Manage Users
+                        {t("manageUsers")}
                       </Link>
                     </>
                   )}
@@ -346,17 +404,52 @@ export default function Navbar() {
                         onClick={() => setShowMobileMenu(false)}
                       >
                         <BookOpen className="w-4 h-4" />
-                        Manage Manga
+                        {t("manageManga")}
                       </Link>
                     </>
                   )}
 
+                  {/* Language Selector - Mobile */}
+                  <div className="border-t border-zinc-800 pt-2 mt-2 px-4">
+                    <p className="text-xs text-zinc-500 mb-2">
+                      {t("language")}
+                    </p>
+                    <div className="flex gap-2 mb-2">
+                      <button
+                        onClick={() => {
+                          setLanguage("EN");
+                          setShowMobileMenu(false);
+                        }}
+                        className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition ${
+                          language === "EN"
+                            ? "bg-green-600 text-white"
+                            : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
+                        }`}
+                      >
+                        EN
+                      </button>
+                      <button
+                        onClick={() => {
+                          setLanguage("MM");
+                          setShowMobileMenu(false);
+                        }}
+                        className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition ${
+                          language === "MM"
+                            ? "bg-green-600 text-white"
+                            : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
+                        }`}
+                      >
+                        MM
+                      </button>
+                    </div>
+                  </div>
+
                   <button
                     onClick={handleSignOut}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-zinc-800 transition border-t border-zinc-800 mt-2"
+                    className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-zinc-800 transition mt-2"
                   >
                     <LogOut className="w-4 h-4" />
-                    Sign Out
+                    {t("signOut")}
                   </button>
                 </>
               ) : (
@@ -366,7 +459,7 @@ export default function Navbar() {
                   onClick={() => setShowMobileMenu(false)}
                 >
                   <User className="w-4 h-4" />
-                  <span>Sign In</span>
+                  <span>{t("signIn")}</span>
                 </Link>
               )}
             </div>

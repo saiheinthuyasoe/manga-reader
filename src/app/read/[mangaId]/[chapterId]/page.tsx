@@ -200,8 +200,16 @@ export default function ReadPage() {
     return <Loading />;
   }
 
-  // Membership required overlay (unless chapter is free)
-  if (!hasMembership && !chapter.isFree) {
+  // Check if user can access this chapter
+  const canAccessChapter =
+    chapter.isFree || // Free chapters are accessible to everyone
+    hasMembership || // Members can access all chapters
+    user.purchasedChapters?.includes(chapterId); // User purchased with coins
+
+  // Membership/Purchase required overlay
+  if (!canAccessChapter) {
+    const coinPrice = chapter.coinPrice || 0;
+
     return (
       <div className="min-h-screen bg-black text-white pt-16 flex items-center justify-center">
         <div className="max-w-md mx-auto px-4 text-center">
@@ -210,22 +218,23 @@ export default function ReadPage() {
               <Lock className="w-8 h-8 text-red-500" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-4">
-              Membership Required
+              {coinPrice > 0 ? "Chapter Locked" : "Membership Required"}
             </h1>
             <p className="text-zinc-400 mb-6">
-              You need an active membership to read this chapter. Please contact
-              an administrator to upgrade your account.
+              {coinPrice > 0
+                ? `This chapter costs ${coinPrice} coins. Purchase it from the manga detail page to unlock.`
+                : "You need an active membership to read this chapter. Please contact an administrator to upgrade your account."}
             </p>
             <div className="flex gap-4">
               <Link
                 href={`/manga/${mangaId}`}
-                className="flex-1 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-semibold transition"
+                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
               >
-                Back to Manga
+                {coinPrice > 0 ? "Purchase Chapter" : "Back to Manga"}
               </Link>
               <Link
                 href="/profile"
-                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
+                className="flex-1 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-semibold transition"
               >
                 View Profile
               </Link>

@@ -8,7 +8,8 @@ import {
   ReactNode,
 } from "react";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 import {
   getUserProfile,
   registerUser,
@@ -28,13 +29,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
+    let unsubscribeProfile: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(
       auth,
       async (firebaseUser: FirebaseUser | null) => {
         console.log("Auth state changed:", firebaseUser?.uid || "No user");
 
+        // Cleanup previous profile listener if exists
+        if (unsubscribeProfile) {
+          unsubscribeProfile();
+          unsubscribeProfile = null;
+        }
+
         if (firebaseUser) {
           console.log("Firebase user found:", firebaseUser.uid);
+
+          // First, try to get the profile once to check if it exists
           let userProfile = await getUserProfile(firebaseUser.uid);
 
           // If user profile doesn't exist, create it
@@ -49,20 +60,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 "User"
             );
             console.log("User profile created:", userProfile);
-          } else {
-            console.log("User profile loaded:", userProfile);
           }
 
-          setUser(userProfile);
+          // Set up real-time listener for user profile updates
+          unsubscribeProfile = onSnapshot(
+            doc(db, "users", firebaseUser.uid),
+            (docSnapshot) => {
+              if (docSnapshot.exists()) {
+                const data = docSnapshot.data();
+                const updatedProfile: UserProfile = {
+                  uid: docSnapshot.id,
+                  email: data.email,
+                  displayName: data.displayName,
+                  role: data.role || "user",
+                  accountType: data.accountType || "free",
+                  photoURL: data.photoURL,
+                  coins: data.coins || 0,
+                  purchasedChapters: data.purchasedChapters || [],
+                  membershipStartDate: data.membershipStartDate?.toDate(),
+                  membershipEndDate: data.membershipEndDate?.toDate(),
+                  createdAt: data.createdAt?.toDate(),
+                  updatedAt: data.updatedAt?.toDate(),
+                };
+                console.log(
+                  "User profile updated in real-time:",
+                  updatedProfile
+                );
+                setUser(updatedProfile);
+              }
+            },
+            (error) => {
+              console.error("Error listening to user profile:", error);
+            }
+          );
+
+          setLoading(false);
         } else {
           console.log("No Firebase user");
           setUser(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
+    };
   }, []);
 
   const signUp = async (

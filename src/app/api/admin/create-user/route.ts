@@ -31,8 +31,10 @@ export async function POST(request: NextRequest) {
       displayName,
       accountType: "free",
       role: role || "user",
+      coins: 0,
       bookmarks: [],
       readingHistory: [],
+      purchasedChapters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -1,11 +1,27 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Share2, Eye, Star, Calendar, User, Palette } from "lucide-react";
+import {
+  Share2,
+  Eye,
+  Star,
+  Calendar,
+  User,
+  Palette,
+  Coins,
+  Lock,
+  Crown,
+} from "lucide-react";
 import { Manga } from "@/types/manga";
 import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import BookmarkButton from "@/components/BookmarkButton";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import Loading from "@/components/Loading";
 
 // Fetch manga from Firebase
 const getMangaById = async (id: string): Promise<Manga | null> => {
@@ -41,13 +57,87 @@ const getMangaById = async (id: string): Promise<Manga | null> => {
   }
 };
 
-export default async function MangaDetailPage({
+export default function MangaDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const manga = await getMangaById(id);
+  const { t } = useLanguage();
+  const { user, hasMembership } = useAuth();
+  const [manga, setManga] = useState<Manga | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [purchasing, setPurchasing] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchManga = async () => {
+      const { id } = await params;
+      const mangaData = await getMangaById(id);
+      setManga(mangaData);
+      setLoading(false);
+    };
+    fetchManga();
+  }, [params]);
+
+  const canAccessChapter = (chapter: any) => {
+    // Free chapters are accessible to everyone
+    if (chapter.isFree) return true;
+
+    // Members can access all non-free chapters
+    if (hasMembership) return true;
+
+    // Check if user has purchased this chapter
+    if (user?.purchasedChapters?.includes(chapter.id)) return true;
+
+    return false;
+  };
+
+  const handlePurchaseChapter = async (
+    chapterId: string,
+    coinPrice: number
+  ) => {
+    if (!user) {
+      alert("Please sign in to purchase chapters");
+      return;
+    }
+
+    if ((user.coins || 0) < coinPrice) {
+      alert(
+        `Insufficient coins. You need ${coinPrice} coins but have ${
+          user.coins || 0
+        }. Please contact admin to buy coins.`
+      );
+      return;
+    }
+
+    if (!confirm(`Purchase this chapter for ${coinPrice} coins?`)) {
+      return;
+    }
+
+    setPurchasing(chapterId);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const newCoins = (user.coins || 0) - coinPrice;
+      const purchasedChapters = [...(user.purchasedChapters || []), chapterId];
+
+      await updateDoc(userRef, {
+        coins: newCoins,
+        purchasedChapters: purchasedChapters,
+        updatedAt: new Date(),
+      });
+
+      // Update local user state
+      window.location.reload(); // Refresh to update user data
+    } catch (error) {
+      console.error("Error purchasing chapter:", error);
+      alert("Failed to purchase chapter. Please try again.");
+    } finally {
+      setPurchasing(null);
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   if (!manga) {
     notFound();
@@ -132,13 +222,13 @@ export default async function MangaDetailPage({
             <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-zinc-400" />
-                <span className="text-zinc-400">Author:</span>
+                <span className="text-zinc-400">{t("author")}:</span>
                 <span>{manga.author}</span>
               </div>
               {manga.artist && (
                 <div className="flex items-center gap-2">
                   <Palette className="w-4 h-4 text-zinc-400" />
-                  <span className="text-zinc-400">Artist:</span>
+                  <span className="text-zinc-400">{t("artist")}:</span>
                   <span>{manga.artist}</span>
                 </div>
               )}
@@ -151,26 +241,26 @@ export default async function MangaDetailPage({
                   href={`/read/${manga.id}/${manga.chapters[0].id}`}
                   className="px-6 sm:px-8 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition text-center text-sm sm:text-base"
                 >
-                  Read Now
+                  {t("readNow")}
                 </Link>
               ) : (
                 <button
                   disabled
                   className="px-6 sm:px-8 py-2.5 sm:py-3 bg-zinc-700 text-zinc-400 rounded-lg font-semibold text-center text-sm sm:text-base cursor-not-allowed"
                 >
-                  No Chapters Available
+                  {t("noChaptersAvailable")}
                 </button>
               )}
               <BookmarkButton mangaId={manga.id} />
               <button className="px-4 sm:px-6 py-2.5 sm:py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg flex items-center justify-center gap-2 transition text-sm sm:text-base">
                 <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                Share
+                {t("share")}
               </button>
             </div>
 
             {/* Description */}
             <div className="bg-zinc-900 p-6 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">Synopsis</h2>
+              <h2 className="text-xl font-semibold mb-4">{t("synopsis")}</h2>
               <p className="text-zinc-300 leading-relaxed">
                 {manga.description}
               </p>
@@ -181,66 +271,123 @@ export default async function MangaDetailPage({
         {/* Chapters List */}
         <div className="mt-8 sm:mt-12 bg-zinc-900 rounded-lg p-4 sm:p-6">
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
-            Chapters
+            {t("chapters")}
           </h2>
           <div className="grid gap-2">
-            {manga.chapters.map((chapter) => (
-              <Link
-                key={chapter.id}
-                href={`/read/${manga.id}/${chapter.id}`}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition group gap-2 sm:gap-0"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <span className="text-green-500 font-semibold group-hover:text-green-400 text-sm sm:text-base">
-                    Chapter {chapter.chapterNumber}
-                  </span>
-                  <span className="text-white text-sm sm:text-base line-clamp-1">
-                    {chapter.title}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-zinc-400">
-                  <div className="flex items-center gap-2">
-                    {chapter.pagesEN && chapter.pagesEN.length > 0 && (
-                      <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
-                        EN
-                      </span>
-                    )}
-                    {chapter.pagesMM && chapter.pagesMM.length > 0 && (
-                      <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-semibold">
-                        MM
-                      </span>
-                    )}
-                    {chapter.isFree && (
-                      <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
-                        FREE
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>
-                      {chapter.publishedAt
-                        ? (() => {
-                            const date = chapter.publishedAt;
-                            // Handle Firebase Timestamp
-                            if (
-                              typeof date === "object" &&
-                              date !== null &&
-                              "seconds" in date
-                            ) {
-                              return new Date(
-                                (date as any).seconds * 1000
-                              ).toLocaleDateString();
-                            }
-                            // Handle regular Date or date string
-                            return new Date(date).toLocaleDateString();
-                          })()
-                        : "Not set"}
+            {manga.chapters.map((chapter) => {
+              const isAccessible = canAccessChapter(chapter);
+              const needsPurchase =
+                !chapter.isFree &&
+                !hasMembership &&
+                !user?.purchasedChapters?.includes(chapter.id);
+              const coinPrice = chapter.coinPrice || 0;
+
+              return (
+                <div
+                  key={chapter.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-zinc-800 rounded-lg gap-2 sm:gap-0"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1">
+                    <span className="text-green-500 font-semibold text-sm sm:text-base">
+                      {t("chapter")} {chapter.chapterNumber}
+                    </span>
+                    <span className="text-white text-sm sm:text-base line-clamp-1">
+                      {chapter.title}
                     </span>
                   </div>
+                  <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-zinc-400">
+                    <div className="flex items-center gap-2">
+                      {chapter.pagesEN && chapter.pagesEN.length > 0 && (
+                        <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
+                          EN
+                        </span>
+                      )}
+                      {chapter.pagesMM && chapter.pagesMM.length > 0 && (
+                        <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-semibold">
+                          MM
+                        </span>
+                      )}
+                      {chapter.isFree && (
+                        <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
+                          FREE
+                        </span>
+                      )}
+                      {needsPurchase && coinPrice > 0 && (
+                        <span className="flex items-center gap-1 px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded text-xs font-semibold">
+                          <Coins className="w-3 h-3" />
+                          {coinPrice}
+                        </span>
+                      )}
+                      {!isAccessible && coinPrice === 0 && (
+                        <span className="flex items-center gap-1 px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-semibold">
+                          <Crown className="w-3 h-3" />
+                          Member Only
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {chapter.publishedAt
+                          ? (() => {
+                              const date = chapter.publishedAt;
+                              // Handle Firebase Timestamp
+                              if (
+                                typeof date === "object" &&
+                                date !== null &&
+                                "seconds" in date
+                              ) {
+                                return new Date(
+                                  (date as any).seconds * 1000
+                                ).toLocaleDateString();
+                              }
+                              // Handle regular Date or date string
+                              return new Date(date).toLocaleDateString();
+                            })()
+                          : "Not set"}
+                      </span>
+                    </div>
+
+                    {/* Action Button */}
+                    <div>
+                      {isAccessible ? (
+                        <Link
+                          href={`/read/${manga.id}/${chapter.id}`}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition"
+                        >
+                          Read
+                        </Link>
+                      ) : needsPurchase && coinPrice > 0 ? (
+                        <button
+                          onClick={() =>
+                            handlePurchaseChapter(chapter.id, coinPrice)
+                          }
+                          disabled={purchasing === chapter.id}
+                          className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-zinc-700 text-white rounded text-xs font-semibold transition flex items-center gap-1"
+                        >
+                          {purchasing === chapter.id ? (
+                            "Purchasing..."
+                          ) : (
+                            <>
+                              <Coins className="w-3 h-3" />
+                              Buy {coinPrice}
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          className="px-4 py-2 bg-zinc-700 text-zinc-400 rounded text-xs font-semibold cursor-not-allowed flex items-center gap-1"
+                        >
+                          <Lock className="w-3 h-3" />
+                          Locked
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

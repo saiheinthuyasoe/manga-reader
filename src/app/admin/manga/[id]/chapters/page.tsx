@@ -10,6 +10,8 @@ import {
   Trash2,
   Eye,
   ArrowLeft,
+  Lock,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMangaById } from "@/lib/db";
@@ -141,6 +143,9 @@ export default function MangaChaptersPage() {
                       MM Pages
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                      Access
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                       Published
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
@@ -179,6 +184,26 @@ export default function MangaChaptersPage() {
                           ) : (
                             <span className="text-zinc-600 text-sm">-</span>
                           )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            {chapter.isFree ? (
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">
+                                <Lock className="w-3 h-3" />
+                                Free
+                              </span>
+                            ) : chapter.coinPrice && chapter.coinPrice > 0 ? (
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-500">
+                                <Coins className="w-3 h-3" />
+                                {chapter.coinPrice} coins
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400">
+                                <Lock className="w-3 h-3" />
+                                Member Only
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-zinc-400 text-sm">
                           {chapter.publishedAt ? (

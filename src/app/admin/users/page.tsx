@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { UserProfile } from "@/types/user";
 import {
   Users,
@@ -16,6 +16,7 @@ import {
   UserPlus,
   Trash2,
   Edit,
+  Coins,
 } from "lucide-react";
 
 export default function ManageUsersPage() {
@@ -43,6 +44,10 @@ export default function ManageUsersPage() {
   const [editUser, setEditUser] = useState<UserProfile | null>(null);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [showCoinModal, setShowCoinModal] = useState(false);
+  const [coinUser, setCoinUser] = useState<UserProfile | null>(null);
+  const [coinAmount, setCoinAmount] = useState(0);
+  const [coinAction, setCoinAction] = useState<"add" | "deduct">("add");
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -51,10 +56,13 @@ export default function ManageUsersPage() {
   }, [user, loading, isAdmin, router]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersSnapshot = await getDocs(collection(db, "users"));
-        const usersData = usersSnapshot.docs.map((doc) => {
+    if (!user || !isAdmin) return;
+
+    // Real-time listener for users collection
+    const unsubscribe = onSnapshot(
+      collection(db, "users"),
+      (snapshot) => {
+        const usersData = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
             uid: doc.id,
@@ -66,17 +74,41 @@ export default function ManageUsersPage() {
           } as UserProfile;
         });
         setUsers(usersData);
-      } catch (error) {
+        setLoadingUsers(false);
+      },
+      (error) => {
         console.error("Error fetching users:", error);
-      } finally {
         setLoadingUsers(false);
       }
-    };
+    );
 
-    if (user && isAdmin) {
-      fetchUsers();
-    }
+    // Cleanup listener on unmount
+    return () => unsubscribe();
   }, [user, isAdmin]);
+
+  // Sync modal user states with real-time updates
+  useEffect(() => {
+    if (selectedUser) {
+      const updated = users.find((u) => u.uid === selectedUser.uid);
+      if (updated) setSelectedUser(updated);
+    }
+    if (roleChangeUser) {
+      const updated = users.find((u) => u.uid === roleChangeUser.uid);
+      if (updated) setRoleChangeUser(updated);
+    }
+    if (editUser) {
+      const updated = users.find((u) => u.uid === editUser.uid);
+      if (updated) {
+        setEditUser(updated);
+        setEditName(updated.displayName);
+        setEditEmail(updated.email);
+      }
+    }
+    if (coinUser) {
+      const updated = users.find((u) => u.uid === coinUser.uid);
+      if (updated) setCoinUser(updated);
+    }
+  }, [users]);
 
   const openMembershipModal = (selectedUser: UserProfile) => {
     setSelectedUser(selectedUser);
@@ -106,22 +138,9 @@ export default function ManageUsersPage() {
 
       await updateDoc(doc(db, "users", selectedUser.uid), updates);
 
-      // Update local state
-      setUsers(
-        users.map((u) =>
-          u.uid === selectedUser.uid
-            ? {
-                ...u,
-                accountType: "membership",
-                membershipStartDate: updates.membershipStartDate,
-                membershipEndDate: updates.membershipEndDate,
-              }
-            : u
-        )
-      );
-
       setShowModal(false);
       setSelectedUser(null);
+      alert("Membership granted successfully!");
     } catch (error) {
       console.error("Error granting membership:", error);
       alert("Failed to grant membership");
@@ -141,18 +160,7 @@ export default function ManageUsersPage() {
         updatedAt: new Date(),
       });
 
-      setUsers(
-        users.map((u) =>
-          u.uid === userId
-            ? {
-                ...u,
-                accountType: "free",
-                membershipEndDate: undefined,
-                membershipStartDate: undefined,
-              }
-            : u
-        )
-      );
+      alert("Membership revoked successfully!");
     } catch (error) {
       console.error("Error revoking membership:", error);
       alert("Failed to revoke membership");
@@ -169,14 +177,9 @@ export default function ManageUsersPage() {
         updatedAt: new Date(),
       });
 
-      setUsers(
-        users.map((u) =>
-          u.uid === roleChangeUser.uid ? { ...u, role: newRole } : u
-        )
-      );
-
       setShowRoleModal(false);
       setRoleChangeUser(null);
+      alert("Role updated successfully!");
     } catch (error) {
       console.error("Error changing role:", error);
       alert("Failed to change role");
@@ -214,22 +217,7 @@ export default function ManageUsersPage() {
         throw new Error(error.message || "Failed to create user");
       }
 
-      const newUser = await response.json();
-
-      // Refresh users list
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const usersData = usersSnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          uid: doc.id,
-          ...data,
-          createdAt: data.createdAt?.toDate(),
-          updatedAt: data.updatedAt?.toDate(),
-          membershipStartDate: data.membershipStartDate?.toDate(),
-          membershipEndDate: data.membershipEndDate?.toDate(),
-        } as UserProfile;
-      });
-      setUsers(usersData);
+      await response.json();
 
       setShowCreateModal(false);
       setNewUserEmail("");
@@ -266,7 +254,6 @@ export default function ManageUsersPage() {
         throw new Error(error.message || "Failed to delete user");
       }
 
-      setUsers(users.filter((u) => u.uid !== userId));
       alert("User deleted successfully!");
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -295,20 +282,68 @@ export default function ManageUsersPage() {
         updatedAt: new Date(),
       });
 
-      setUsers(
-        users.map((u) =>
-          u.uid === editUser.uid
-            ? { ...u, displayName: editName, email: editEmail }
-            : u
-        )
-      );
-
       setShowEditModal(false);
       setEditUser(null);
       alert("User updated successfully!");
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Failed to update user");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const openCoinModal = (user: UserProfile) => {
+    setCoinUser(user);
+    setCoinAmount(0);
+    setCoinAction("add");
+    setShowCoinModal(true);
+  };
+
+  const handleTransferCoins = async () => {
+    if (!coinUser) {
+      alert("No user selected");
+      return;
+    }
+
+    if (coinAmount <= 0) {
+      alert("Please enter a valid coin amount");
+      return;
+    }
+
+    const currentCoins = coinUser.coins || 0;
+
+    // Check if deducting would result in negative balance
+    if (coinAction === "deduct" && coinAmount > currentCoins) {
+      alert(
+        `Cannot deduct ${coinAmount} coins. User only has ${currentCoins} coins.`
+      );
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const newCoins =
+        coinAction === "add"
+          ? currentCoins + coinAmount
+          : currentCoins - coinAmount;
+
+      await updateDoc(doc(db, "users", coinUser.uid), {
+        coins: newCoins,
+        updatedAt: new Date(),
+      });
+
+      setShowCoinModal(false);
+      setCoinUser(null);
+      setCoinAmount(0);
+      alert(
+        `Successfully ${
+          coinAction === "add" ? "added" : "deducted"
+        } ${coinAmount} coins!`
+      );
+    } catch (error) {
+      console.error("Error transferring coins:", error);
+      alert("Failed to transfer coins");
     } finally {
       setProcessing(false);
     }
@@ -380,6 +415,9 @@ export default function ManageUsersPage() {
                     Role
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">
+                    Coins
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">
                     Account Type
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">
@@ -419,6 +457,21 @@ export default function ManageUsersPage() {
                       >
                         {u.role.toUpperCase()}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Coins className="w-4 h-4 text-yellow-500" />
+                        <span className="font-semibold text-yellow-500">
+                          {u.coins || 0}
+                        </span>
+                        <button
+                          onClick={() => openCoinModal(u)}
+                          className="ml-2 px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs rounded transition"
+                          title="Transfer coins"
+                        >
+                          +
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -885,6 +938,170 @@ export default function ManageUsersPage() {
                 className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition disabled:opacity-50"
               >
                 {processing ? "Creating..." : "Create User"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Coin Transfer Modal */}
+      {showCoinModal && coinUser && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Coins className="w-6 h-6 text-yellow-500" />
+                Transfer Coins
+              </h2>
+              <button
+                onClick={() => {
+                  setShowCoinModal(false);
+                  setCoinUser(null);
+                  setCoinAmount(0);
+                }}
+                className="p-2 hover:bg-zinc-800 rounded-lg transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-zinc-400 mb-2">Transfer to:</p>
+              <p className="font-semibold">{coinUser.displayName}</p>
+              <p className="text-sm text-zinc-500">{coinUser.email}</p>
+              <div className="mt-3 p-3 bg-zinc-800 rounded-lg">
+                <p className="text-sm text-zinc-400">
+                  Current Balance:{" "}
+                  <span className="text-yellow-500 font-semibold">
+                    {coinUser.coins || 0} coins
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              {/* Add/Deduct Toggle */}
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">
+                  Action
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCoinAction("add")}
+                    className={`flex-1 px-4 py-2 rounded-lg transition ${
+                      coinAction === "add"
+                        ? "bg-green-600 text-white"
+                        : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                    }`}
+                  >
+                    Add Coins
+                  </button>
+                  <button
+                    onClick={() => setCoinAction("deduct")}
+                    className={`flex-1 px-4 py-2 rounded-lg transition ${
+                      coinAction === "deduct"
+                        ? "bg-red-600 text-white"
+                        : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                    }`}
+                  >
+                    Deduct Coins
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">
+                  Amount
+                </label>
+                <div className="flex gap-2 mb-3">
+                  {[10, 50, 100, 500, 1000].map((amount) => (
+                    <button
+                      key={amount}
+                      onClick={() => setCoinAmount(amount)}
+                      className={`px-3 py-2 rounded text-sm transition ${
+                        coinAmount === amount
+                          ? coinAction === "add"
+                            ? "bg-green-600 text-white"
+                            : "bg-red-600 text-white"
+                          : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                      }`}
+                    >
+                      {amount}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="number"
+                  min="1"
+                  max={
+                    coinAction === "deduct" ? coinUser.coins || 0 : undefined
+                  }
+                  value={coinAmount}
+                  onChange={(e) => setCoinAmount(Number(e.target.value))}
+                  className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Enter custom amount"
+                />
+                {coinAmount > 0 && (
+                  <p className="text-xs text-zinc-500 mt-2">
+                    New Balance:{" "}
+                    <span
+                      className={`font-semibold ${
+                        coinAction === "add" ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {coinAction === "add"
+                        ? (coinUser.coins || 0) + coinAmount
+                        : Math.max(0, (coinUser.coins || 0) - coinAmount)}{" "}
+                      coins
+                    </span>
+                    {coinAction === "deduct" &&
+                      coinAmount > (coinUser.coins || 0) && (
+                        <span className="block text-red-500 mt-1">
+                          ⚠️ Insufficient balance
+                        </span>
+                      )}
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                <p className="text-sm text-blue-400">
+                  💡 Users can use coins to purchase premium chapters. Free
+                  users need to contact admin to buy coins.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowCoinModal(false);
+                  setCoinUser(null);
+                  setCoinAmount(0);
+                }}
+                className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTransferCoins}
+                disabled={
+                  processing ||
+                  coinAmount <= 0 ||
+                  (coinAction === "deduct" &&
+                    coinAmount > (coinUser.coins || 0))
+                }
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50 ${
+                  coinAction === "add"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {processing
+                  ? `${coinAction === "add" ? "Adding" : "Deducting"}...`
+                  : `${
+                      coinAction === "add" ? "Add" : "Deduct"
+                    } ${coinAmount} Coins`}
               </button>
             </div>
           </div>
