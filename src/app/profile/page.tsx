@@ -118,12 +118,12 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-black pt-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center">
+          <div className="bg-gradient-to-r from-green-600 to-purple-600 p-6 sm:p-8">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-zinc-800 rounded-full flex items-center justify-center shrink-0">
                 {user.photoURL ? (
                   <img
                     src={user.photoURL}
@@ -131,14 +131,16 @@ export default function ProfilePage() {
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
-                  <User className="w-10 h-10 text-zinc-400" />
+                  <User className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-400" />
                 )}
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-white truncate">
                   {user.displayName}
                 </h1>
-                <p className="text-blue-100">{user.email}</p>
+                <p className="text-sm sm:text-base text-green-100 truncate">
+                  {user.email}
+                </p>
               </div>
             </div>
           </div>
@@ -227,8 +229,8 @@ export default function ProfilePage() {
             </div>
 
             {!hasMembership && (
-              <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/50 rounded-lg">
-                <p className="text-blue-400 text-sm">
+              <div className="mt-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg">
+                <p className="text-green-400 text-sm">
                   <strong>Note:</strong> You currently have a free account. To
                   read manga chapters, please contact an administrator to
                   upgrade your account to membership.
@@ -237,36 +239,38 @@ export default function ProfilePage() {
             )}
 
             {/* Stats */}
-            <div className="mt-8 grid grid-cols-2 gap-4">
-              <div className="p-4 bg-zinc-800 rounded-lg text-center">
-                <p className="text-2xl font-bold text-white">
+            <div className="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-3 sm:p-4 bg-zinc-800 rounded-lg text-center">
+                <p className="text-xl sm:text-2xl font-bold text-white">
                   {user.bookmarks?.length || 0}
                 </p>
-                <p className="text-sm text-zinc-400">Bookmarks</p>
+                <p className="text-xs sm:text-sm text-zinc-400">Bookmarks</p>
               </div>
-              <div className="p-4 bg-zinc-800 rounded-lg text-center">
-                <p className="text-2xl font-bold text-white">
+              <div className="p-3 sm:p-4 bg-zinc-800 rounded-lg text-center">
+                <p className="text-xl sm:text-2xl font-bold text-white">
                   {user.readingHistory?.length || 0}
                 </p>
-                <p className="text-sm text-zinc-400">Reading History</p>
+                <p className="text-xs sm:text-sm text-zinc-400">
+                  Reading History
+                </p>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="mt-8 flex gap-4">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               {isAdmin && (
                 <button
                   onClick={() => router.push("/admin")}
-                  className="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition text-sm sm:text-base"
                 >
                   Admin Dashboard
                 </button>
               )}
               <button
                 onClick={handleSignOut}
-                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm sm:text-base"
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
                 Sign Out
               </button>
             </div>
@@ -287,7 +291,7 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 <button
                   onClick={() => setShowPasswordChange(true)}
-                  className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
+                  className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
                 >
                   Change Password
                 </button>
@@ -317,7 +321,7 @@ export default function ProfilePage() {
                     required
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
                     placeholder="Enter current password"
                   />
                 </div>
@@ -331,7 +335,7 @@ export default function ProfilePage() {
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
                     placeholder="Enter new password (min 6 characters)"
                   />
                 </div>
@@ -345,7 +349,7 @@ export default function ProfilePage() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
                     placeholder="Confirm new password"
                   />
                 </div>
@@ -354,7 +358,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={changingPassword}
-                    className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 text-white rounded-lg font-semibold transition"
+                    className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 text-white rounded-lg font-semibold transition"
                   >
                     {changingPassword ? "Changing..." : "Change Password"}
                   </button>

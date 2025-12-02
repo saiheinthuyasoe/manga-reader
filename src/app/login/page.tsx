@@ -27,9 +27,7 @@ export default function LoginPage() {
       await signIn(formData.email, formData.password);
       router.push("/");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to sign in"
-      );
+      setError(err instanceof Error ? err.message : "Failed to sign in");
     } finally {
       setLoading(false);
     }
@@ -56,7 +54,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <BookOpen className="w-10 h-10 text-blue-500" />
+            <BookOpen className="w-10 h-10 text-green-500" />
             <h1 className="text-3xl font-bold text-white">MangaReader</h1>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
@@ -85,7 +83,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Enter your email"
                 />
               </div>
@@ -104,7 +102,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Enter your password"
                 />
               </div>
@@ -113,7 +111,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg py-3 font-semibold transition"
+              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg py-3 font-semibold transition"
             >
               {loading ? "Signing In..." : "Sign In"}
             </button>
@@ -124,7 +122,9 @@ export default function LoginPage() {
               <div className="w-full border-t border-zinc-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-zinc-900 text-zinc-400">Or continue with</span>
+              <span className="px-4 bg-zinc-900 text-zinc-400">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -149,7 +149,7 @@ export default function LoginPage() {
               Don&apos;t have an account?{" "}
               <Link
                 href="/register"
-                className="text-blue-500 hover:text-blue-400"
+                className="text-green-500 hover:text-green-400"
               >
                 Create Account
               </Link>

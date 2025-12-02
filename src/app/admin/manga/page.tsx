@@ -81,12 +81,12 @@ export default function ManageMangaPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <BookOpen className="w-8 h-8 text-blue-500" />
+            <BookOpen className="w-8 h-8 text-green-500" />
             <h1 className="text-3xl font-bold text-white">Manage Manga</h1>
           </div>
           <Link
             href="/admin/manga/add"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
           >
             <PlusCircle className="w-5 h-5" />
             Add New Manga
@@ -102,7 +102,7 @@ export default function ManageMangaPage() {
               placeholder="Search by title, author, or genre..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900 text-white rounded-lg pl-12 pr-4 py-3 border border-zinc-800 focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-900 text-white rounded-lg pl-12 pr-4 py-3 border border-zinc-800 focus:outline-none focus:border-green-500"
             />
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function ManageMangaPage() {
         {/* Manga List */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="inline-block w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-zinc-400 mt-4">Loading manga...</p>
           </div>
         ) : filteredMangas.length === 0 ? (
@@ -190,7 +190,7 @@ export default function ManageMangaPage() {
                             manga.status === "ongoing"
                               ? "bg-green-500/20 text-green-400"
                               : manga.status === "completed"
-                              ? "bg-blue-500/20 text-blue-400"
+                              ? "bg-green-500/20 text-green-400"
                               : "bg-yellow-500/20 text-yellow-400"
                           }`}
                         >
@@ -225,7 +225,7 @@ export default function ManageMangaPage() {
                             className="p-2 hover:bg-zinc-700 rounded-lg transition"
                             title="Edit"
                           >
-                            <Edit className="w-4 h-4 text-blue-400" />
+                            <Edit className="w-4 h-4 text-green-400" />
                           </Link>
                           <button
                             onClick={() => handleDelete(manga.id, manga.title)}

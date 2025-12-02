@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Logo & Description */}
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-6 h-6 text-blue-500" />
+              <BookOpen className="w-6 h-6 text-green-500" />
               <span className="text-xl font-bold text-white">MangaReader</span>
             </Link>
             <p className="text-zinc-400 text-sm mb-4">

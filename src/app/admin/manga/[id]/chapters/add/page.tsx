@@ -128,7 +128,7 @@ export default function AddChapterPage() {
     return (
       <div className="min-h-screen bg-black pt-16 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="inline-block w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-zinc-400 mt-4">Loading...</p>
         </div>
       </div>
@@ -147,7 +147,7 @@ export default function AddChapterPage() {
             Back to Chapters
           </Link>
           <div className="flex items-center gap-3">
-            <PlusCircle className="w-8 h-8 text-blue-500" />
+            <PlusCircle className="w-8 h-8 text-green-500" />
             <h1 className="text-3xl font-bold text-white">Add New Chapter</h1>
           </div>
           {manga && <p className="text-zinc-400 mt-2">to {manga.title}</p>}
@@ -175,7 +175,7 @@ export default function AddChapterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, chapterNumber: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="e.g., 1 or 1.5"
                 />
               </div>
@@ -190,7 +190,7 @@ export default function AddChapterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="e.g., The Beginning"
                 />
               </div>
@@ -208,7 +208,7 @@ export default function AddChapterPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, publishDate: e.target.value })
                 }
-                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
               <p className="text-xs text-zinc-500 mt-2">
                 Set when this chapter should be published. Defaults to current
@@ -225,7 +225,7 @@ export default function AddChapterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, isFree: e.target.checked })
                   }
-                  className="w-5 h-5 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                  className="w-5 h-5 rounded bg-zinc-700 border-zinc-600 text-green-600 focus:ring-2 focus:ring-green-500"
                 />
                 <div>
                   <span className="text-white font-medium">Free Chapter</span>
@@ -271,9 +271,9 @@ export default function AddChapterPage() {
                   <button
                     type="button"
                     onClick={() => open()}
-                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-blue-500 transition flex flex-col items-center gap-2"
+                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
                   >
-                    <ImagePlus className="w-10 h-10 text-blue-500" />
+                    <ImagePlus className="w-10 h-10 text-green-500" />
                     <span className="text-zinc-400">
                       Click to upload English pages
                     </span>
@@ -294,7 +294,7 @@ export default function AddChapterPage() {
                         alt={`EN Page ${index + 1}`}
                         className="w-full h-48 object-cover rounded-lg"
                       />
-                      <div className="absolute top-2 left-2 px-2 py-1 bg-blue-600 rounded text-xs text-white font-semibold">
+                      <div className="absolute top-2 left-2 px-2 py-1 bg-green-600 rounded text-xs text-white font-semibold">
                         EN {index + 1}
                       </div>
                       <button
@@ -391,7 +391,7 @@ export default function AddChapterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition"
+                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition"
               >
                 {loading ? "Adding Chapter..." : "Add Chapter"}
               </button>

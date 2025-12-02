@@ -68,11 +68,11 @@ export default async function MangaDetailPage({
       </div>
 
       {/* Content Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-64 relative z-10">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-48 sm:-mt-64 relative z-10">
+        <div className="flex flex-col md:flex-row gap-6 sm:gap-8">
           {/* Cover Image */}
-          <div className="shrink-0">
-            <div className="relative w-64 aspect-2/3 rounded-lg overflow-hidden shadow-2xl">
+          <div className="shrink-0 mx-auto md:mx-0">
+            <div className="relative w-48 sm:w-56 md:w-64 aspect-[2/3] rounded-lg overflow-hidden shadow-2xl">
               <Image
                 src={manga.coverImage}
                 alt={manga.title}
@@ -84,29 +84,31 @@ export default async function MangaDetailPage({
 
           {/* Info Section */}
           <div className="flex-1 text-white">
-            <h1 className="text-4xl font-bold mb-2">{manga.title}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
+              {manga.title}
+            </h1>
             {manga.alternativeTitles && manga.alternativeTitles.length > 0 && (
-              <p className="text-zinc-400 mb-4">
+              <p className="text-sm sm:text-base text-zinc-400 mb-4">
                 {manga.alternativeTitles.join(", ")}
               </p>
             )}
 
             {/* Stats */}
-            <div className="flex flex-wrap gap-6 mb-6">
+            <div className="flex flex-wrap gap-4 sm:gap-6 mb-4 sm:mb-6 text-sm sm:text-base">
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                 <span className="font-semibold">{manga.rating.toFixed(1)}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Eye className="w-5 h-5 text-blue-500" />
+                <Eye className="w-5 h-5 text-green-500" />
                 <span>{(manga.views / 1000000).toFixed(2)}M views</span>
               </div>
               <div
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                className={`px-3 py-1 rounded-full text-sm font-semibold ${
                   manga.status === "ongoing"
                     ? "bg-green-500/20 text-green-500"
                     : manga.status === "completed"
-                    ? "bg-blue-500/20 text-blue-500"
+                    ? "bg-green-500/20 text-green-500"
                     : "bg-yellow-500/20 text-yellow-500"
                 }`}
               >
@@ -143,16 +145,16 @@ export default async function MangaDetailPage({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
               <Link
                 href={`/read/${manga.id}/${manga.chapters[0].id}`}
-                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition"
+                className="px-6 sm:px-8 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition text-center text-sm sm:text-base"
               >
                 Read Now
               </Link>
               <BookmarkButton mangaId={manga.id} />
-              <button className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg flex items-center gap-2 transition">
-                <Share2 className="w-5 h-5" />
+              <button className="px-4 sm:px-6 py-2.5 sm:py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg flex items-center justify-center gap-2 transition text-sm sm:text-base">
+                <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 Share
               </button>
             </div>
@@ -168,25 +170,29 @@ export default async function MangaDetailPage({
         </div>
 
         {/* Chapters List */}
-        <div className="mt-12 bg-zinc-900 rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-white mb-6">Chapters</h2>
+        <div className="mt-8 sm:mt-12 bg-zinc-900 rounded-lg p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
+            Chapters
+          </h2>
           <div className="grid gap-2">
             {manga.chapters.map((chapter) => (
               <Link
                 key={chapter.id}
                 href={`/read/${manga.id}/${chapter.id}`}
-                className="flex items-center justify-between p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition group"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition group gap-2 sm:gap-0"
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-blue-500 font-semibold group-hover:text-blue-400">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                  <span className="text-green-500 font-semibold group-hover:text-green-400 text-sm sm:text-base">
                     Chapter {chapter.chapterNumber}
                   </span>
-                  <span className="text-white">{chapter.title}</span>
+                  <span className="text-white text-sm sm:text-base line-clamp-1">
+                    {chapter.title}
+                  </span>
                 </div>
-                <div className="flex items-center gap-6 text-sm text-zinc-400">
+                <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-zinc-400">
                   <div className="flex items-center gap-2">
                     {chapter.pagesEN && chapter.pagesEN.length > 0 && (
-                      <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-semibold">
+                      <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
                         EN
                       </span>
                     )}

@@ -112,16 +112,16 @@ export default function BookmarkButton({ mangaId }: BookmarkButtonProps) {
     <button
       onClick={toggleBookmark}
       disabled={loading || authLoading}
-      className={`px-6 py-3 rounded-lg flex items-center gap-2 transition disabled:opacity-50 ${
+      className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg flex items-center justify-center gap-2 transition text-sm sm:text-base ${
         isBookmarked
-          ? "bg-blue-600 hover:bg-blue-700"
+          ? "bg-green-600 hover:bg-green-700"
           : "bg-zinc-800 hover:bg-zinc-700"
       }`}
     >
       {isBookmarked ? (
-        <BookmarkCheck className="w-5 h-5" />
+        <BookmarkCheck className="w-4 h-4 sm:w-5 sm:h-5" />
       ) : (
-        <BookmarkPlus className="w-5 h-5" />
+        <BookmarkPlus className="w-4 h-4 sm:w-5 sm:h-5" />
       )}
       {authLoading ? "Loading..." : isBookmarked ? "Bookmarked" : "Bookmark"}
     </button>

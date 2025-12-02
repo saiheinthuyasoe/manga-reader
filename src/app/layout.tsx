@@ -19,6 +19,13 @@ export const metadata: Metadata = {
   title: "MangaReader - Read Manga Online Free",
   description:
     "Read thousands of manga titles for free. Updated daily with the latest chapters.",
+  manifest: "/manifest.json",
+  themeColor: "#16a34a",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Manga Reader",
+  },
 };
 
 export default function RootLayout({

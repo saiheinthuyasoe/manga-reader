@@ -30,7 +30,7 @@ export default function MangaCard({ manga }: MangaCardProps) {
                 manga.status === "ongoing"
                   ? "bg-green-500"
                   : manga.status === "completed"
-                  ? "bg-blue-500"
+                  ? "bg-green-500"
                   : "bg-yellow-500"
               }`}
             >

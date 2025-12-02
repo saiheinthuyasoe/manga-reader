@@ -118,7 +118,7 @@ export default function EditMangaPage() {
     return (
       <div className="min-h-screen bg-black pt-16 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="inline-block w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-zinc-400 mt-4">Loading manga...</p>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function EditMangaPage() {
     <div className="min-h-screen bg-black pt-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center gap-3 mb-8">
-          <Edit className="w-8 h-8 text-blue-500" />
+          <Edit className="w-8 h-8 text-green-500" />
           <h1 className="text-3xl font-bold text-white">Edit Manga</h1>
         </div>
 
@@ -198,7 +198,7 @@ export default function EditMangaPage() {
                       <button
                         type="button"
                         onClick={() => open()}
-                        className="w-full p-8 border-2 border-dashed border-zinc-700 rounded-lg hover:border-blue-500 transition flex flex-col items-center gap-2"
+                        className="w-full p-8 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
                       >
                         <ImagePlus className="w-12 h-12 text-zinc-500" />
                         <span className="text-zinc-400">
@@ -258,7 +258,7 @@ export default function EditMangaPage() {
                       <button
                         type="button"
                         onClick={() => open()}
-                        className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-blue-500 transition flex flex-col items-center gap-2"
+                        className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
                       >
                         <Upload className="w-8 h-8 text-zinc-500" />
                         <span className="text-zinc-400 text-sm">
@@ -283,7 +283,7 @@ export default function EditMangaPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter manga title"
               />
             </div>
@@ -302,7 +302,7 @@ export default function EditMangaPage() {
                     alternativeTitles: e.target.value,
                   })
                 }
-                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="e.g., ワンピース, One Piece"
               />
             </div>
@@ -319,7 +319,7 @@ export default function EditMangaPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={6}
-                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter manga description"
               />
             </div>
@@ -337,7 +337,7 @@ export default function EditMangaPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, author: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Author name"
                 />
               </div>
@@ -351,7 +351,7 @@ export default function EditMangaPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, artist: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Artist name"
                 />
               </div>
@@ -374,7 +374,7 @@ export default function EditMangaPage() {
                         | "hiatus",
                     })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="ongoing">Ongoing</option>
                   <option value="completed">Completed</option>
@@ -392,7 +392,7 @@ export default function EditMangaPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, genres: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="e.g., Action, Adventure, Fantasy"
                 />
               </div>
@@ -403,7 +403,7 @@ export default function EditMangaPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition"
+                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition"
               >
                 {loading ? "Saving Changes..." : "Save Changes"}
               </button>

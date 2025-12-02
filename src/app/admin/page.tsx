@@ -130,7 +130,7 @@ export default function AdminPage() {
           <div className="flex gap-3">
             <Link
               href="/admin/manga"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
             >
               <BookOpen className="w-5 h-5" />
               Manage Manga
@@ -155,7 +155,7 @@ export default function AdminPage() {
                   {stats.total}
                 </p>
               </div>
-              <Users className="w-12 h-12 text-blue-500" />
+              <Users className="w-12 h-12 text-green-500" />
             </div>
           </div>
 
@@ -197,7 +197,7 @@ export default function AdminPage() {
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>

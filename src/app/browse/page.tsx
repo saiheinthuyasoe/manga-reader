@@ -99,9 +99,11 @@ export default function BrowsePage() {
     <div className="min-h-screen bg-black text-white pt-16">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Browse Manga</h1>
-          <p className="text-zinc-400">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
+            Browse Manga
+          </h1>
+          <p className="text-sm sm:text-base text-zinc-400">
             Explore our collection of {mangas.length} manga titles
           </p>
         </div>
@@ -117,7 +119,7 @@ export default function BrowsePage() {
                 placeholder="Search by title or author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
               />
             </div>
 
@@ -127,7 +129,7 @@ export default function BrowsePage() {
               <select
                 value={selectedGenre}
                 onChange={(e) => setSelectedGenre(e.target.value)}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
               >
                 {allGenres.map((genre) => (
                   <option key={genre} value={genre}>
@@ -143,7 +145,7 @@ export default function BrowsePage() {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
               >
                 <option value="All">All</option>
                 <option value="Ongoing">Ongoing</option>
@@ -173,7 +175,7 @@ export default function BrowsePage() {
                 href={`/manga/${manga.id}`}
                 className="group"
               >
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-blue-600 transition">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition">
                   <div className="aspect-[2/3] relative bg-zinc-800">
                     {manga.coverImage ? (
                       <Image
@@ -189,7 +191,7 @@ export default function BrowsePage() {
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-blue-500 transition">
+                    <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-green-500 transition">
                       {manga.title}
                     </h3>
                     <p className="text-xs text-zinc-400 mb-2">{manga.author}</p>

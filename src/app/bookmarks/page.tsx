@@ -96,7 +96,7 @@ export default function BookmarksPage() {
           </p>
           <Link
             href="/login"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition"
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition"
           >
             Log In
           </Link>
@@ -109,12 +109,14 @@ export default function BookmarksPage() {
     <div className="min-h-screen bg-black text-white pt-16">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Bookmark className="w-8 h-8 text-blue-500" />
-            <h1 className="text-4xl font-bold">My Bookmarks</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <Bookmark className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+              My Bookmarks
+            </h1>
           </div>
-          <p className="text-zinc-400">
+          <p className="text-sm sm:text-base text-zinc-400">
             {bookmarkedMangas.length > 0
               ? `You have ${bookmarkedMangas.length} bookmarked manga`
               : "You haven't bookmarked any manga yet"}
@@ -127,7 +129,7 @@ export default function BookmarksPage() {
             {bookmarkedMangas.map((manga) => (
               <div key={manga.id} className="group relative">
                 <Link href={`/manga/${manga.id}`}>
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-blue-600 transition">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition">
                     <div className="aspect-2/3 relative bg-zinc-800">
                       {manga.coverImage ? (
                         <Image
@@ -143,7 +145,7 @@ export default function BookmarksPage() {
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-blue-500 transition">
+                      <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-green-500 transition">
                         {manga.title}
                       </h3>
                       <p className="text-xs text-zinc-400 mb-2">
@@ -188,7 +190,7 @@ export default function BookmarksPage() {
             </p>
             <Link
               href="/browse"
-              className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition"
+              className="inline-block px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition"
             >
               Browse Manga
             </Link>

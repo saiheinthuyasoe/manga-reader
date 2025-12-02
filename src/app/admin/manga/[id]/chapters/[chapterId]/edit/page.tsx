@@ -185,7 +185,7 @@ export default function EditChapterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, chapterNumber: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="e.g., 1 or 1.5"
                 />
               </div>
@@ -200,7 +200,7 @@ export default function EditChapterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="e.g., The Beginning"
                 />
               </div>
@@ -218,7 +218,7 @@ export default function EditChapterPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, publishDate: e.target.value })
                 }
-                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
               <p className="text-xs text-zinc-500 mt-2">
                 Set when this chapter should be published.
@@ -234,7 +234,7 @@ export default function EditChapterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, isFree: e.target.checked })
                   }
-                  className="w-5 h-5 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                  className="w-5 h-5 rounded bg-zinc-700 border-zinc-600 text-green-600 focus:ring-2 focus:ring-green-500"
                 />
                 <div>
                   <span className="text-white font-medium">Free Chapter</span>
@@ -271,9 +271,9 @@ export default function EditChapterPage() {
                   <button
                     type="button"
                     onClick={() => open()}
-                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-blue-500 transition flex flex-col items-center gap-2"
+                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
                   >
-                    <ImagePlus className="w-10 h-10 text-blue-500" />
+                    <ImagePlus className="w-10 h-10 text-green-500" />
                     <span className="text-zinc-400">Upload English pages</span>
                   </button>
                 )}
@@ -300,7 +300,7 @@ export default function EditChapterPage() {
                           <X className="w-5 h-5" />
                         </button>
                       </div>
-                      <div className="absolute bottom-2 left-2 bg-blue-600 px-2 py-1 rounded text-xs font-semibold">
+                      <div className="absolute bottom-2 left-2 bg-green-600 px-2 py-1 rounded text-xs font-semibold">
                         EN {index + 1}
                       </div>
                     </div>
@@ -379,7 +379,7 @@ export default function EditChapterPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>

@@ -225,7 +225,7 @@ export default function ReadPage() {
               </Link>
               <Link
                 href="/profile"
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
+                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
               >
                 View Profile
               </Link>
@@ -240,35 +240,37 @@ export default function ReadPage() {
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <Link
                 href={`/manga/${mangaId}`}
-                className="p-2 hover:bg-zinc-800 rounded-lg transition"
+                className="p-1.5 sm:p-2 hover:bg-zinc-800 rounded-lg transition shrink-0"
               >
-                <Home className="w-5 h-5" />
+                <Home className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <div>
-                <h1 className="font-semibold">{manga.title}</h1>
-                <p className="text-sm text-zinc-400">
-                  Chapter {chapter.chapterNumber}: {chapter.title}
+              <div className="min-w-0">
+                <h1 className="font-semibold text-sm sm:text-base truncate">
+                  {manga.title}
+                </h1>
+                <p className="text-xs sm:text-sm text-zinc-400 truncate">
+                  Ch. {chapter.chapterNumber}: {chapter.title}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className="p-2 hover:bg-zinc-800 rounded-lg transition"
+                className="p-1.5 sm:p-2 hover:bg-zinc-800 rounded-lg transition"
                 aria-label="Settings"
               >
-                <Settings className="w-5 h-5" />
+                <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <select
                 value={chapterId}
                 onChange={(e) => goToChapter(e.target.value)}
-                className="bg-zinc-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-zinc-800 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-xs sm:text-sm"
                 aria-label="Select chapter"
               >
                 {chapters.map((ch) => (
@@ -328,7 +330,7 @@ export default function ReadPage() {
                   onClick={() => handleImageFitChange("width")}
                   className={`px-3 py-2 rounded-lg transition text-xs ${
                     imageFit === "width"
-                      ? "bg-blue-600"
+                      ? "bg-green-600"
                       : "bg-zinc-800 hover:bg-zinc-700"
                   }`}
                 >
@@ -338,7 +340,7 @@ export default function ReadPage() {
                   onClick={() => handleImageFitChange("height")}
                   className={`px-3 py-2 rounded-lg transition text-xs ${
                     imageFit === "height"
-                      ? "bg-blue-600"
+                      ? "bg-green-600"
                       : "bg-zinc-800 hover:bg-zinc-700"
                   }`}
                 >
@@ -348,7 +350,7 @@ export default function ReadPage() {
                   onClick={() => handleImageFitChange("original")}
                   className={`px-3 py-2 rounded-lg transition text-xs ${
                     imageFit === "original"
-                      ? "bg-blue-600"
+                      ? "bg-green-600"
                       : "bg-zinc-800 hover:bg-zinc-700"
                   }`}
                 >
@@ -358,7 +360,7 @@ export default function ReadPage() {
                   onClick={() => handleImageFitChange("custom")}
                   className={`px-3 py-2 rounded-lg transition text-xs ${
                     imageFit === "custom"
-                      ? "bg-blue-600"
+                      ? "bg-green-600"
                       : "bg-zinc-800 hover:bg-zinc-700"
                   }`}
                 >
@@ -380,7 +382,7 @@ export default function ReadPage() {
                     step="5"
                     value={customZoom}
                     onChange={(e) => handleZoomChange(Number(e.target.value))}
-                    className="w-full accent-blue-600"
+                    className="w-full accent-green-600"
                     aria-label="Zoom level"
                   />
                 </div>
@@ -395,7 +397,7 @@ export default function ReadPage() {
                   onClick={() => handleScrollDirectionChange("horizontal")}
                   className={`flex-1 px-4 py-2 rounded-lg transition ${
                     scrollDirection === "horizontal"
-                      ? "bg-blue-600"
+                      ? "bg-green-600"
                       : "bg-zinc-800 hover:bg-zinc-700"
                   }`}
                 >
@@ -405,7 +407,7 @@ export default function ReadPage() {
                   onClick={() => handleScrollDirectionChange("vertical")}
                   className={`flex-1 px-4 py-2 rounded-lg transition ${
                     scrollDirection === "vertical"
-                      ? "bg-blue-600"
+                      ? "bg-green-600"
                       : "bg-zinc-800 hover:bg-zinc-700"
                   }`}
                 >

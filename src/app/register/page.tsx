@@ -51,9 +51,7 @@ export default function RegisterPage() {
       await signUp(formData.email, formData.password, formData.displayName);
       router.push("/");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create account"
-      );
+      setError(err instanceof Error ? err.message : "Failed to create account");
     } finally {
       setLoading(false);
     }
@@ -80,7 +78,7 @@ export default function RegisterPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <BookOpen className="w-10 h-10 text-blue-500" />
+            <BookOpen className="w-10 h-10 text-green-500" />
             <h1 className="text-3xl font-bold text-white">MangaReader</h1>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Create Account</h2>
@@ -111,7 +109,7 @@ export default function RegisterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, displayName: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Enter your name"
                 />
               </div>
@@ -130,7 +128,7 @@ export default function RegisterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Enter your email"
                 />
               </div>
@@ -149,7 +147,7 @@ export default function RegisterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Enter password"
                   minLength={6}
                 />
@@ -172,15 +170,15 @@ export default function RegisterPage() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Confirm password"
                   minLength={6}
                 />
               </div>
             </div>
 
-            <div className="bg-blue-500/10 border border-blue-500/50 rounded-lg p-4">
-              <p className="text-sm text-blue-400">
+            <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4">
+              <p className="text-sm text-green-400">
                 <strong>Note:</strong> Free accounts can browse manga. To read
                 chapters, you need a membership. Contact admin to upgrade your
                 account.
@@ -190,7 +188,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg py-3 font-semibold transition"
+              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg py-3 font-semibold transition"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
@@ -201,7 +199,9 @@ export default function RegisterPage() {
               <div className="w-full border-t border-zinc-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-zinc-900 text-zinc-400">Or continue with</span>
+              <span className="px-4 bg-zinc-900 text-zinc-400">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -224,7 +224,10 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-zinc-400">
               Already have an account?{" "}
-              <Link href="/login" className="text-blue-500 hover:text-blue-400">
+              <Link
+                href="/login"
+                className="text-green-500 hover:text-green-400"
+              >
                 Sign In
               </Link>
             </p>
