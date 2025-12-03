@@ -129,11 +129,56 @@ export default function Navbar() {
               </Link>
             )}
 
+            {/* Language Selector */}
+            <div className="relative" ref={langMenuRef}>
+              <button
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                className="flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition"
+                aria-label="Language selector"
+              >
+                <Languages className="w-4 h-4" />
+                <span className="text-sm font-medium">{language}</span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+
+              {showLangMenu && (
+                <div className="absolute right-0 mt-2 w-32 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-2">
+                  <button
+                    onClick={() => {
+                      setLanguage("EN");
+                      setShowLangMenu(false);
+                    }}
+                    className={`w-full px-4 py-2 text-left transition ${
+                      language === "EN"
+                        ? "bg-green-600 text-white"
+                        : "text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    }`}
+                  >
+                    English
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLanguage("MM");
+                      setShowLangMenu(false);
+                    }}
+                    className={`w-full px-4 py-2 text-left transition ${
+                      language === "MM"
+                        ? "bg-green-600 text-white"
+                        : "text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    }`}
+                  >
+                    Myanmar
+                  </button>
+                </div>
+              )}
+            </div>
+
             {user ? (
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition"
+                  aria-label="User menu"
                 >
                   <User className="w-4 h-4" />
                   <span>{user.displayName}</span>
@@ -216,43 +261,6 @@ export default function Navbar() {
                         </Link>
                       </>
                     )}
-
-                    {/* Language Selector */}
-                    <div className="border-t border-zinc-800 pt-2 mt-2">
-                      <div className="px-4 py-2">
-                        <p className="text-xs text-zinc-500 mb-2">
-                          {t("language")}
-                        </p>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setLanguage("EN");
-                              setShowUserMenu(false);
-                            }}
-                            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition ${
-                              language === "EN"
-                                ? "bg-green-600 text-white"
-                                : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
-                            }`}
-                          >
-                            EN
-                          </button>
-                          <button
-                            onClick={() => {
-                              setLanguage("MM");
-                              setShowUserMenu(false);
-                            }}
-                            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition ${
-                              language === "MM"
-                                ? "bg-green-600 text-white"
-                                : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
-                            }`}
-                          >
-                            MM
-                          </button>
-                        </div>
-                      </div>
-                    </div>
 
                     <button
                       onClick={handleSignOut}

@@ -16,15 +16,21 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
+  // Always start with "EN" to match server render and avoid hydration mismatch
+  const [language, setLanguageState] = useState<Language>("EN");
+
+  // Load language from localStorage after hydration
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const savedLanguage = localStorage.getItem("language") as Language;
       if (savedLanguage && (savedLanguage === "EN" || savedLanguage === "MM")) {
-        return savedLanguage;
+        // Use setTimeout to avoid cascading renders
+        setTimeout(() => {
+          setLanguageState(savedLanguage);
+        }, 0);
       }
     }
-    return "EN";
-  });
+  }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
