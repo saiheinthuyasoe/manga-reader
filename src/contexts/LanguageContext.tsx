@@ -17,16 +17,20 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
-    const savedLanguage = localStorage.getItem("language") as Language;
-    if (savedLanguage && (savedLanguage === "EN" || savedLanguage === "MM")) {
-      return savedLanguage;
+    if (typeof window !== "undefined") {
+      const savedLanguage = localStorage.getItem("language") as Language;
+      if (savedLanguage && (savedLanguage === "EN" || savedLanguage === "MM")) {
+        return savedLanguage;
+      }
     }
     return "EN";
   });
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem("language", lang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("language", lang);
+    }
   };
 
   const t = (key: TranslationKey): string => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -22,7 +23,7 @@ interface Manga {
   status: string;
 }
 
-export default function BrowsePage() {
+function BrowseContent() {
   const { loading } = useAuth();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -289,5 +290,13 @@ export default function BrowsePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <BrowseContent />
+    </Suspense>
   );
 }
