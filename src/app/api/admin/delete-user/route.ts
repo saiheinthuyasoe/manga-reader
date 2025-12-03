@@ -21,10 +21,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: "User deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting user:", error);
+    const errorMessage =
+      typeof error === "object" && error !== null && "message" in error
+        ? (error as { message?: string }).message
+        : "Failed to delete user";
     return NextResponse.json(
-      { message: error.message || "Failed to delete user" },
+      { message: errorMessage },
       { status: 500 }
     );
   }

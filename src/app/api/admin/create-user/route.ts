@@ -45,10 +45,14 @@ export async function POST(request: NextRequest) {
       message: "User created successfully",
       user: { uid, email, displayName, role: userProfile.role },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating user:", error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to create user";
     return NextResponse.json(
-      { message: error.message || "Failed to create user" },
+      { message },
       { status: 500 }
     );
   }
