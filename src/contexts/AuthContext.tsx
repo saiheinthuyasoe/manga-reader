@@ -77,6 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   photoURL: data.photoURL,
                   coins: data.coins || 0,
                   purchasedChapters: data.purchasedChapters || [],
+                  bookmarks: data.bookmarks || [],
+                  readingHistory: data.readingHistory || [],
                   membershipStartDate: data.membershipStartDate?.toDate(),
                   membershipEndDate: data.membershipEndDate?.toDate(),
                   createdAt: data.createdAt?.toDate(),

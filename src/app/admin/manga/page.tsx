@@ -1,22 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import NextImage from "next/image";
 import { BookOpen, PlusCircle, Edit, Trash2, Eye, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAllManga, deleteManga } from "@/lib/db";
+import { deleteManga } from "@/lib/db";
 import { Manga } from "@/types/manga";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import Pagination from "@/components/Pagination";
 
 export default function ManageMangaPage() {
   const router = useRouter();
   const { user, isAdmin, isTranslator } = useAuth();
   const [mangas, setMangas] = useState<Manga[]>([]);
-  const [filteredMangas, setFilteredMangas] = useState<Manga[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [userMap, setUserMap] = useState<
     Record<string, { name: string; email: string }>
   >({});
@@ -60,7 +63,6 @@ export default function ManageMangaPage() {
       // Admins see all manga
 
       setMangas(filteredData);
-      setFilteredMangas(filteredData);
       setLoading(false);
     });
 
@@ -68,20 +70,17 @@ export default function ManageMangaPage() {
     return () => unsubscribe();
   }, [user, isAdmin, isTranslator, router]);
 
-  useEffect(() => {
+  const filteredMangas = useMemo(() => {
     if (searchQuery.trim() === "") {
-      setFilteredMangas(mangas);
-    } else {
-      const query = searchQuery.toLowerCase();
-      setFilteredMangas(
-        mangas.filter(
-          (manga) =>
-            manga.title.toLowerCase().includes(query) ||
-            manga.author.toLowerCase().includes(query) ||
-            manga.genres.some((g) => g.toLowerCase().includes(query))
-        )
-      );
+      return mangas;
     }
+    const query = searchQuery.toLowerCase();
+    return mangas.filter(
+      (manga) =>
+        manga.title.toLowerCase().includes(query) ||
+        manga.author.toLowerCase().includes(query) ||
+        manga.genres.some((g) => g.toLowerCase().includes(query))
+    );
   }, [searchQuery, mangas]);
 
   const handleDelete = async (id: string, title: string) => {
@@ -128,7 +127,10 @@ export default function ManageMangaPage() {
               type="text"
               placeholder="Search by title, author, or genre..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full bg-zinc-900 text-white rounded-lg pl-12 pr-4 py-3 border border-zinc-800 focus:outline-none focus:border-green-500"
             />
           </div>
@@ -184,102 +186,119 @@ export default function ManageMangaPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800">
-                  {filteredMangas.map((manga) => (
-                    <tr
-                      key={manga.id}
-                      className="hover:bg-zinc-800/50 transition"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={manga.coverImage}
-                            alt={manga.title}
-                            className="w-12 h-16 object-cover rounded"
-                          />
-                          <div>
-                            <p className="text-white font-medium">
-                              {manga.title}
-                            </p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {manga.genres.slice(0, 2).map((genre) => (
-                                <span
-                                  key={genre}
-                                  className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded"
-                                >
-                                  {genre}
-                                </span>
-                              ))}
+                  {filteredMangas
+                    .slice(
+                      (currentPage - 1) * itemsPerPage,
+                      currentPage * itemsPerPage
+                    )
+                    .map((manga) => (
+                      <tr
+                        key={manga.id}
+                        className="hover:bg-zinc-800/50 transition"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="relative w-12 h-16">
+                              <NextImage
+                                src={manga.coverImage}
+                                alt={manga.title}
+                                fill
+                                className="object-cover rounded"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">
+                                {manga.title}
+                              </p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {manga.genres.slice(0, 2).map((genre) => (
+                                  <span
+                                    key={genre}
+                                    className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded"
+                                  >
+                                    {genre}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-zinc-300">
-                        {manga.author}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                            manga.status === "ongoing"
-                              ? "bg-green-500/20 text-green-400"
-                              : manga.status === "completed"
-                              ? "bg-green-500/20 text-green-400"
-                              : "bg-yellow-500/20 text-yellow-400"
-                          }`}
-                        >
-                          {manga.status.charAt(0).toUpperCase() +
-                            manga.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-zinc-300">
-                        {manga.chapters.length}
-                      </td>
-                      <td className="px-6 py-4 text-zinc-300">
-                        {manga.views.toLocaleString()}
-                      </td>
-                      {isAdmin && (
-                        <td className="px-6 py-4 text-zinc-300">
-                          {manga.createdBy && userMap[manga.createdBy]
-                            ? userMap[manga.createdBy].name
-                            : "Unknown"}
                         </td>
-                      )}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <Link
-                            href={`/manga/${manga.id}`}
-                            className="p-2 hover:bg-zinc-700 rounded-lg transition"
-                            title="View"
+                        <td className="px-6 py-4 text-zinc-300">
+                          {manga.author}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                              manga.status === "ongoing"
+                                ? "bg-green-500/20 text-green-400"
+                                : manga.status === "completed"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-yellow-500/20 text-yellow-400"
+                            }`}
                           >
-                            <Eye className="w-4 h-4 text-zinc-400" />
-                          </Link>
-                          <Link
-                            href={`/admin/manga/${manga.id}/chapters`}
-                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition"
-                            title="Manage Chapters"
-                          >
-                            Chapters
-                          </Link>
-                          <Link
-                            href={`/admin/manga/${manga.id}/edit`}
-                            className="p-2 hover:bg-zinc-700 rounded-lg transition"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4 text-green-400" />
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(manga.id, manga.title)}
-                            className="p-2 hover:bg-zinc-700 rounded-lg transition"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-400" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {manga.status.charAt(0).toUpperCase() +
+                              manga.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-zinc-300">
+                          {manga.chapters.length}
+                        </td>
+                        <td className="px-6 py-4 text-zinc-300">
+                          {manga.views.toLocaleString()}
+                        </td>
+                        {isAdmin && (
+                          <td className="px-6 py-4 text-zinc-300">
+                            {manga.createdBy && userMap[manga.createdBy]
+                              ? userMap[manga.createdBy].name
+                              : "Unknown"}
+                          </td>
+                        )}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/manga/${manga.id}`}
+                              className="p-2 hover:bg-zinc-700 rounded-lg transition"
+                              title="View"
+                            >
+                              <Eye className="w-4 h-4 text-zinc-400" />
+                            </Link>
+                            <Link
+                              href={`/admin/manga/${manga.id}/chapters`}
+                              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition"
+                              title="Manage Chapters"
+                            >
+                              Chapters
+                            </Link>
+                            <Link
+                              href={`/admin/manga/${manga.id}/edit`}
+                              className="p-2 hover:bg-zinc-700 rounded-lg transition"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4 text-green-400" />
+                            </Link>
+                            <button
+                              onClick={() =>
+                                handleDelete(manga.id, manga.title)
+                              }
+                              className="p-2 hover:bg-zinc-700 rounded-lg transition"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredMangas.length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredMangas.length}
+            />
           </div>
         )}
 

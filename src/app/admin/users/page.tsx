@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
+import Pagination from "@/components/Pagination";
 import { db } from "@/lib/firebase";
 import { collection, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { UserProfile } from "@/types/user";
@@ -48,6 +49,9 @@ export default function ManageUsersPage() {
   const [coinUser, setCoinUser] = useState<UserProfile | null>(null);
   const [coinAmount, setCoinAmount] = useState(0);
   const [coinAction, setCoinAction] = useState<"add" | "deduct">("add");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -108,7 +112,7 @@ export default function ManageUsersPage() {
       const updated = users.find((u) => u.uid === coinUser.uid);
       if (updated) setCoinUser(updated);
     }
-  }, [users]);
+  }, [users, selectedUser, roleChangeUser, editUser, coinUser]);
 
   const openMembershipModal = (selectedUser: UserProfile) => {
     setSelectedUser(selectedUser);
@@ -122,7 +126,12 @@ export default function ManageUsersPage() {
 
     setProcessing(true);
     try {
-      const updates: any = {
+      const updates: {
+        accountType: string;
+        membershipStartDate: Date;
+        updatedAt: Date;
+        membershipEndDate?: Date | null;
+      } = {
         accountType: "membership",
         membershipStartDate: new Date(),
         updatedAt: new Date(),
@@ -400,6 +409,20 @@ export default function ManageUsersPage() {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+          />
+        </div>
+
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -432,140 +455,180 @@ export default function ManageUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800">
-                {users.map((u) => (
-                  <tr key={u.uid} className="hover:bg-zinc-800/50 transition">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {u.displayName}
-                        {u.role === "admin" && (
-                          <Crown className="w-4 h-4 text-yellow-500" />
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-zinc-400">
-                      {u.email}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          u.role === "admin"
-                            ? "bg-yellow-500/20 text-yellow-500"
-                            : u.role === "translator"
-                            ? "bg-green-500/20 text-green-500"
-                            : "bg-zinc-700 text-zinc-300"
-                        }`}
-                      >
-                        {u.role.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Coins className="w-4 h-4 text-yellow-500" />
-                        <span className="font-semibold text-yellow-500">
-                          {u.coins || 0}
-                        </span>
-                        <button
-                          onClick={() => openCoinModal(u)}
-                          className="ml-2 px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs rounded transition"
-                          title="Transfer coins"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          u.accountType === "membership"
-                            ? "bg-green-500/20 text-green-500"
-                            : "bg-zinc-700 text-zinc-300"
-                        }`}
-                      >
-                        {u.accountType === "membership" ? "MEMBER" : "FREE"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {u.accountType === "membership" ? (
+                {users
+                  .filter((u) =>
+                    searchQuery
+                      ? u.displayName
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()) ||
+                        u.email
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase())
+                      : true
+                  )
+                  .slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                  )
+                  .map((u) => (
+                    <tr key={u.uid} className="hover:bg-zinc-800/50 transition">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {u.displayName}
+                          {u.role === "admin" && (
+                            <Crown className="w-4 h-4 text-yellow-500" />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-zinc-400">
+                        {u.email}
+                      </td>
+                      <td className="px-6 py-4">
                         <span
-                          className={`text-sm ${
-                            isExpired(u) ? "text-red-500" : "text-green-500"
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            u.role === "admin"
+                              ? "bg-yellow-500/20 text-yellow-500"
+                              : u.role === "translator"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-zinc-700 text-zinc-300"
                           }`}
                         >
-                          {isExpired(u) ? "Expired" : "Active"}
+                          {u.role.toUpperCase()}
                         </span>
-                      ) : (
-                        <span className="text-sm text-zinc-500">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-zinc-400">
-                      {u.accountType === "membership" ? (
-                        <div className="flex flex-col">
-                          <span>{formatDate(u.membershipEndDate)}</span>
-                          <span className="text-xs text-zinc-500">
-                            {getDaysRemaining(u.membershipEndDate)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Coins className="w-4 h-4 text-yellow-500" />
+                          <span className="font-semibold text-yellow-500">
+                            {u.coins || 0}
                           </span>
+                          <button
+                            onClick={() => openCoinModal(u)}
+                            className="ml-2 px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs rounded transition"
+                            title="Transfer coins"
+                          >
+                            +
+                          </button>
                         </div>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => openEditModal(u)}
-                          className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
-                          title="Edit user"
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            u.accountType === "membership"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-zinc-700 text-zinc-300"
+                          }`}
                         >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openRoleModal(u)}
-                          className="p-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded transition"
-                          title="Change role"
-                        >
-                          <UserCog className="w-4 h-4" />
-                        </button>
+                          {u.accountType === "membership" ? "MEMBER" : "FREE"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
                         {u.accountType === "membership" ? (
-                          <button
-                            onClick={() => handleRevokeMembership(u.uid)}
-                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition"
+                          <span
+                            className={`text-sm ${
+                              isExpired(u) ? "text-red-500" : "text-green-500"
+                            }`}
                           >
-                            Revoke
-                          </button>
+                            {isExpired(u) ? "Expired" : "Active"}
+                          </span>
                         ) : (
-                          <button
-                            onClick={() => openMembershipModal(u)}
-                            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition"
-                          >
-                            Grant
-                          </button>
+                          <span className="text-sm text-zinc-500">-</span>
                         )}
-                        {u.accountType === "membership" && (
-                          <button
-                            onClick={() => openMembershipModal(u)}
-                            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition"
-                          >
-                            Extend
-                          </button>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-zinc-400">
+                        {u.accountType === "membership" ? (
+                          <div className="flex flex-col">
+                            <span>{formatDate(u.membershipEndDate)}</span>
+                            <span className="text-xs text-zinc-500">
+                              {getDaysRemaining(u.membershipEndDate)}
+                            </span>
+                          </div>
+                        ) : (
+                          "-"
                         )}
-                        {u.uid !== user?.uid && (
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
                           <button
-                            onClick={() =>
-                              handleDeleteUser(u.uid, u.displayName)
-                            }
-                            className="p-2 bg-red-600 hover:bg-red-700 text-white rounded transition"
-                            title="Delete user"
+                            onClick={() => openEditModal(u)}
+                            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+                            title="Edit user"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Edit className="w-4 h-4" />
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          <button
+                            onClick={() => openRoleModal(u)}
+                            className="p-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded transition"
+                            title="Change role"
+                          >
+                            <UserCog className="w-4 h-4" />
+                          </button>
+                          {u.accountType === "membership" ? (
+                            <button
+                              onClick={() => handleRevokeMembership(u.uid)}
+                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition"
+                            >
+                              Revoke
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => openMembershipModal(u)}
+                              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition"
+                            >
+                              Grant
+                            </button>
+                          )}
+                          {u.accountType === "membership" && (
+                            <button
+                              onClick={() => openMembershipModal(u)}
+                              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition"
+                            >
+                              Extend
+                            </button>
+                          )}
+                          {u.uid !== user?.uid && (
+                            <button
+                              onClick={() =>
+                                handleDeleteUser(u.uid, u.displayName)
+                              }
+                              className="p-2 bg-red-600 hover:bg-red-700 text-white rounded transition"
+                              title="Delete user"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(
+              users.filter((u) =>
+                searchQuery
+                  ? u.displayName
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase()) ||
+                    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+                  : true
+              ).length / itemsPerPage
+            )}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            totalItems={
+              users.filter((u) =>
+                searchQuery
+                  ? u.displayName
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase()) ||
+                    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+                  : true
+              ).length
+            }
+          />
         </div>
 
         <div className="mt-6 text-sm text-zinc-400">
@@ -590,6 +653,7 @@ export default function ManageUsersPage() {
               <button
                 onClick={() => setShowModal(false)}
                 className="p-2 hover:bg-zinc-800 rounded-lg transition"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -685,6 +749,7 @@ export default function ManageUsersPage() {
               <button
                 onClick={() => setShowRoleModal(false)}
                 className="p-2 hover:bg-zinc-800 rounded-lg transition"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -775,6 +840,7 @@ export default function ManageUsersPage() {
                   setEditUser(null);
                 }}
                 className="p-2 hover:bg-zinc-800 rounded-lg transition"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -790,6 +856,7 @@ export default function ManageUsersPage() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter display name"
                 />
               </div>
 
@@ -802,6 +869,7 @@ export default function ManageUsersPage() {
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
                   className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter email address"
                 />
               </div>
 
@@ -854,6 +922,7 @@ export default function ManageUsersPage() {
                   setNewUserRole("user");
                 }}
                 className="p-2 hover:bg-zinc-800 rounded-lg transition"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -909,6 +978,7 @@ export default function ManageUsersPage() {
                     )
                   }
                   className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  aria-label="Select user role"
                 >
                   <option value="user">User - Basic access</option>
                   <option value="translator">
@@ -960,6 +1030,7 @@ export default function ManageUsersPage() {
                   setCoinAmount(0);
                 }}
                 className="p-2 hover:bg-zinc-800 rounded-lg transition"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>

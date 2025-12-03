@@ -14,7 +14,7 @@ import {
   Lock,
   Crown,
 } from "lucide-react";
-import { Manga } from "@/types/manga";
+import { Manga, Chapter } from "@/types/manga";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import BookmarkButton from "@/components/BookmarkButton";
@@ -78,7 +78,7 @@ export default function MangaDetailPage({
     fetchManga();
   }, [params]);
 
-  const canAccessChapter = (chapter: any) => {
+  const canAccessChapter = (chapter: Chapter) => {
     // Free chapters are accessible to everyone
     if (chapter.isFree) return true;
 
@@ -162,7 +162,7 @@ export default function MangaDetailPage({
         <div className="flex flex-col md:flex-row gap-6 sm:gap-8">
           {/* Cover Image */}
           <div className="shrink-0 mx-auto md:mx-0">
-            <div className="relative w-48 sm:w-56 md:w-64 aspect-[2/3] rounded-lg overflow-hidden shadow-2xl">
+            <div className="relative w-48 sm:w-56 md:w-64 aspect-2/3 rounded-lg overflow-hidden shadow-2xl">
               <Image
                 src={manga.coverImage}
                 alt={manga.title}
@@ -338,7 +338,7 @@ export default function MangaDetailPage({
                                 "seconds" in date
                               ) {
                                 return new Date(
-                                  (date as any).seconds * 1000
+                                  (date as { seconds: number }).seconds * 1000
                                 ).toLocaleDateString();
                               }
                               // Handle regular Date or date string

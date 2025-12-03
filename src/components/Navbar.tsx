@@ -83,11 +83,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/logo.png"
+              src="/logo_buutee.png"
               alt="BuuTee Logo"
               width={50}
               height={50}
-              className="w-12 h-12"
+              className="w-10 h-10"
             />
             <span className="text-xl font-bold text-white">BuuTee</span>
           </Link>

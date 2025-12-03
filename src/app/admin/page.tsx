@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Loading from "@/components/Loading";
+import Pagination from "@/components/Pagination";
 import {
   Shield,
   Users,
@@ -27,6 +28,8 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [processingUser, setProcessingUser] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!loading && (!user || (!isAdmin && !isTranslator))) {
@@ -47,6 +50,7 @@ export default function AdminPage() {
         u.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredUsers(filtered);
+    setCurrentPage(1);
   }, [searchTerm, users]);
 
   const fetchUsers = async () => {
@@ -229,74 +233,87 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800">
-                  {filteredUsers.map((u) => (
-                    <tr key={u.uid} className="hover:bg-zinc-800/50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-zinc-700 rounded-full flex items-center justify-center">
-                            <Users className="w-5 h-5 text-zinc-400" />
+                  {filteredUsers
+                    .slice(
+                      (currentPage - 1) * itemsPerPage,
+                      currentPage * itemsPerPage
+                    )
+                    .map((u) => (
+                      <tr key={u.uid} className="hover:bg-zinc-800/50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-zinc-700 rounded-full flex items-center justify-center">
+                              <Users className="w-5 h-5 text-zinc-400" />
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">
+                                {u.displayName}
+                              </p>
+                              {u.role === "admin" && (
+                                <span className="text-xs text-purple-400">
+                                  Admin
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-white font-medium">
-                              {u.displayName}
-                            </p>
-                            {u.role === "admin" && (
-                              <span className="text-xs text-purple-400">
-                                Admin
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-zinc-300">{u.email}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            u.accountType === "membership"
-                              ? "bg-green-500/20 text-green-500"
-                              : "bg-zinc-700 text-zinc-400"
-                          }`}
-                        >
-                          {u.accountType}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-zinc-400 text-sm">
-                        {new Date(u.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        {u.uid !== user.uid && (
-                          <div className="flex gap-2">
-                            {u.accountType === "free" ? (
-                              <button
-                                onClick={() =>
-                                  handleUpdateAccountType(u.uid, "membership")
-                                }
-                                disabled={processingUser === u.uid}
-                                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 text-white rounded text-sm font-medium transition flex items-center gap-1"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                                Upgrade
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() =>
-                                  handleUpdateAccountType(u.uid, "free")
-                                }
-                                disabled={processingUser === u.uid}
-                                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-zinc-700 text-white rounded text-sm font-medium transition flex items-center gap-1"
-                              >
-                                <UserX className="w-4 h-4" />
-                                Downgrade
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4 text-zinc-300">{u.email}</td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              u.accountType === "membership"
+                                ? "bg-green-500/20 text-green-500"
+                                : "bg-zinc-700 text-zinc-400"
+                            }`}
+                          >
+                            {u.accountType}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-zinc-400 text-sm">
+                          {new Date(u.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          {u.uid !== user.uid && (
+                            <div className="flex gap-2">
+                              {u.accountType === "free" ? (
+                                <button
+                                  onClick={() =>
+                                    handleUpdateAccountType(u.uid, "membership")
+                                  }
+                                  disabled={processingUser === u.uid}
+                                  className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 text-white rounded text-sm font-medium transition flex items-center gap-1"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                  Upgrade
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() =>
+                                    handleUpdateAccountType(u.uid, "free")
+                                  }
+                                  disabled={processingUser === u.uid}
+                                  className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-zinc-700 text-white rounded text-sm font-medium transition flex items-center gap-1"
+                                >
+                                  <UserX className="w-4 h-4" />
+                                  Downgrade
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredUsers.length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredUsers.length}
+            />
 
             {filteredUsers.length === 0 && (
               <div className="p-12 text-center">

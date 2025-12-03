@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import NextImage from "next/image";
 import {
   BookOpen,
   PlusCircle,
@@ -31,29 +32,29 @@ export default function MangaChaptersPage() {
   }, [user, isAdmin, isTranslator, router]);
 
   useEffect(() => {
+    const loadManga = async () => {
+      try {
+        setLoading(true);
+        const data = await getMangaById(params.id as string);
+
+        // Check ownership for translators
+        if (data && isTranslator && !isAdmin && data.createdBy !== user?.uid) {
+          router.push("/admin/manga");
+          return;
+        }
+
+        setManga(data);
+      } catch (error) {
+        console.error("Failed to load manga:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (user && (isAdmin || isTranslator)) {
       loadManga();
     }
-  }, [user, isAdmin, isTranslator]);
-
-  const loadManga = async () => {
-    try {
-      setLoading(true);
-      const data = await getMangaById(params.id as string);
-
-      // Check ownership for translators
-      if (data && isTranslator && !isAdmin && data.createdBy !== user?.uid) {
-        router.push("/admin/manga");
-        return;
-      }
-
-      setManga(data);
-    } catch (error) {
-      console.error("Failed to load manga:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user, isAdmin, isTranslator, params.id, router]);
 
   if (!user || (!isAdmin && !isTranslator)) {
     return null;
@@ -93,11 +94,14 @@ export default function MangaChaptersPage() {
             Back to Manga List
           </Link>
           <div className="flex items-center gap-4 mb-4">
-            <img
-              src={manga.coverImage}
-              alt={manga.title}
-              className="w-16 h-24 object-cover rounded"
-            />
+            <div className="relative w-16 h-24">
+              <NextImage
+                src={manga.coverImage}
+                alt={manga.title}
+                fill
+                className="object-cover rounded"
+              />
+            </div>
             <div>
               <h1 className="text-3xl font-bold text-white">{manga.title}</h1>
               <p className="text-zinc-400">Manage Chapters</p>
@@ -121,7 +125,7 @@ export default function MangaChaptersPage() {
             <BookOpen className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
             <p className="text-zinc-400 text-lg mb-2">No chapters yet</p>
             <p className="text-zinc-600 text-sm">
-              Click "Add New Chapter" to get started
+              Click &ldquo;Add New Chapter&rdquo; to get started
             </p>
           </div>
         ) : (
@@ -216,7 +220,7 @@ export default function MangaChaptersPage() {
                                 "seconds" in date
                               ) {
                                 return new Date(
-                                  (date as any).seconds * 1000
+                                  (date as { seconds: number }).seconds * 1000
                                 ).toLocaleDateString();
                               }
                               // Handle regular Date or date string

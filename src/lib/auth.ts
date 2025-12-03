@@ -136,10 +136,15 @@ export async function signInWithGoogle(): Promise<UserProfile> {
     }
 
     return userProfile;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle account exists with different credential
-    if (error.code === "auth/account-exists-with-different-credential") {
-      const email = error.customData?.email;
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code: string }).code === "auth/account-exists-with-different-credential"
+    ) {
+      const email = (error as { customData?: { email?: string } }).customData?.email;
 
       if (email) {
         // Get existing sign-in methods for this email
@@ -168,9 +173,19 @@ export async function linkGoogleAccount(): Promise<void> {
   const provider = new GoogleAuthProvider();
 
   try {
-    await linkWithCredential(auth.currentUser, provider as any);
-  } catch (error: any) {
-    if (error.code === "auth/credential-already-in-use") {
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    if (!credential) {
+      throw new Error("Failed to obtain Google credential.");
+    }
+    await linkWithCredential(auth.currentUser, credential);
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code: string }).code === "auth/credential-already-in-use"
+    ) {
       throw new Error("This Google account is already linked to another user");
     }
     throw error;

@@ -211,6 +211,7 @@ export default function AddChapterPage() {
                 Publish Date & Time *
               </label>
               <input
+                title="publish-date"
                 type="datetime-local"
                 required
                 value={formData.publishDate}

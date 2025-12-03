@@ -370,6 +370,7 @@ export default function EditMangaPage() {
                   Status *
                 </label>
                 <select
+                  title="status"
                   value={formData.status}
                   onChange={(e) =>
                     setFormData({

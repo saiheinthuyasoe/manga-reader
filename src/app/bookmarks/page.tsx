@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import Loading from "@/components/Loading";
+import Pagination from "@/components/Pagination";
 import { Bookmark, Trash2 } from "lucide-react";
 
 interface Manga {
@@ -23,6 +24,8 @@ export default function BookmarksPage() {
   const { user, loading } = useAuth();
   const [bookmarkedMangas, setBookmarkedMangas] = useState<Manga[]>([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     const fetchBookmarks = async () => {
@@ -125,62 +128,76 @@ export default function BookmarksPage() {
 
         {/* Bookmarked Manga Grid */}
         {bookmarkedMangas.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {bookmarkedMangas.map((manga) => (
-              <div key={manga.id} className="group relative">
-                <Link href={`/manga/${manga.id}`}>
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition">
-                    <div className="aspect-2/3 relative bg-zinc-800">
-                      {manga.coverImage ? (
-                        <Image
-                          src={manga.coverImage}
-                          alt={manga.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                          No Cover
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {bookmarkedMangas
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((manga) => (
+                  <div key={manga.id} className="group relative">
+                    <Link href={`/manga/${manga.id}`}>
+                      <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition">
+                        <div className="aspect-2/3 relative bg-zinc-800">
+                          {manga.coverImage ? (
+                            <Image
+                              src={manga.coverImage}
+                              alt={manga.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                              No Cover
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-green-500 transition">
-                        {manga.title}
-                      </h3>
-                      <p className="text-xs text-zinc-400 mb-2">
-                        {manga.author}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {manga.genres.slice(0, 2).map((genre) => (
-                          <span
-                            key={genre}
-                            className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded"
-                          >
-                            {genre}
-                          </span>
-                        ))}
-                        {manga.genres.length > 2 && (
-                          <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded">
-                            +{manga.genres.length - 2}
-                          </span>
-                        )}
+                        <div className="p-4">
+                          <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-green-500 transition">
+                            {manga.title}
+                          </h3>
+                          <p className="text-xs text-zinc-400 mb-2">
+                            {manga.author}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {manga.genres.slice(0, 2).map((genre) => (
+                              <span
+                                key={genre}
+                                className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded"
+                              >
+                                {genre}
+                              </span>
+                            ))}
+                            {manga.genres.length > 2 && (
+                              <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded">
+                                +{manga.genres.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </Link>
+                    </Link>
 
-                {/* Remove Bookmark Button */}
-                <button
-                  onClick={() => removeBookmark(manga.id)}
-                  className="absolute top-2 right-2 p-2 bg-red-600/90 hover:bg-red-700 rounded-lg transition opacity-0 group-hover:opacity-100"
-                  aria-label="Remove bookmark"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
+                    {/* Remove Bookmark Button */}
+                    <button
+                      onClick={() => removeBookmark(manga.id)}
+                      className="absolute top-2 right-2 p-2 bg-red-600/90 hover:bg-red-700 rounded-lg transition opacity-0 group-hover:opacity-100"
+                      aria-label="Remove bookmark"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(bookmarkedMangas.length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={bookmarkedMangas.length}
+            />
+          </>
         ) : (
           <div className="text-center py-16 bg-zinc-900 border border-zinc-800 rounded-lg">
             <Bookmark className="w-16 h-16 text-zinc-700 mx-auto mb-4" />

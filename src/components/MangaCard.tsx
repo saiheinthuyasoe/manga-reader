@@ -57,7 +57,7 @@ export default function MangaCard({ manga }: MangaCardProps) {
 
           {latestChapter && (
             <div className="text-xs text-zinc-500">
-              Chapter {latestChapter.number}
+              Chapter {latestChapter.chapterNumber}
             </div>
           )}
         </div>

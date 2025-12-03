@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CldUploadWidget } from "next-cloudinary";
 import { PlusCircle, Upload, X, ImagePlus } from "lucide-react";
+import NextImage from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { addManga } from "@/lib/db";
 import { Manga } from "@/types/manga";
@@ -118,9 +119,11 @@ export default function AddMangaPage() {
                     typeof result.info !== "string" &&
                     "secure_url" in result.info
                   ) {
+                    const url = (result.info as { secure_url: string })
+                      .secure_url;
                     setFormData((prev) => ({
                       ...prev,
-                      coverImage: result.info.secure_url,
+                      coverImage: url,
                     }));
                   }
                 }}
@@ -129,11 +132,14 @@ export default function AddMangaPage() {
                   <div>
                     {formData.coverImage ? (
                       <div className="relative">
-                        <img
-                          src={formData.coverImage}
-                          alt="Cover preview"
-                          className="w-48 h-72 object-cover rounded-lg"
-                        />
+                        <div className="relative w-48 h-72">
+                          <NextImage
+                            src={formData.coverImage}
+                            alt="Cover preview"
+                            fill
+                            className="object-cover rounded-lg"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() =>
@@ -177,9 +183,11 @@ export default function AddMangaPage() {
                     typeof result.info !== "string" &&
                     "secure_url" in result.info
                   ) {
+                    const url = (result.info as { secure_url: string })
+                      .secure_url;
                     setFormData((prev) => ({
                       ...prev,
-                      bannerImage: result.info.secure_url,
+                      bannerImage: url,
                     }));
                   }
                 }}
@@ -188,11 +196,14 @@ export default function AddMangaPage() {
                   <div>
                     {formData.bannerImage ? (
                       <div className="relative">
-                        <img
-                          src={formData.bannerImage}
-                          alt="Banner preview"
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
+                        <div className="relative w-full h-48">
+                          <NextImage
+                            src={formData.bannerImage}
+                            alt="Banner preview"
+                            fill
+                            className="object-cover rounded-lg"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() =>
@@ -314,6 +325,7 @@ export default function AddMangaPage() {
                   Status *
                 </label>
                 <select
+                  aria-label="Manga Status"
                   value={formData.status}
                   onChange={(e) =>
                     setFormData({

@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import NextImage from "next/image";
 import { ArrowLeft, X, ImagePlus } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
+import { Manga, Chapter } from "@/types/manga";
 import Loading from "@/components/Loading";
 
 export default function EditChapterPage() {
@@ -17,7 +19,7 @@ export default function EditChapterPage() {
   const mangaId = params.id as string;
   const chapterId = params.chapterId as string;
 
-  const [manga, setManga] = useState<any>(null);
+  const [manga, setManga] = useState<Manga | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -49,7 +51,7 @@ export default function EditChapterPage() {
           return;
         }
 
-        const mangaData = { id: mangaDoc.id, ...mangaDoc.data() };
+        const mangaData = { id: mangaDoc.id, ...mangaDoc.data() } as Manga;
 
         // Check ownership for translators
         if (isTranslator && !isAdmin && mangaData.createdBy !== user?.uid) {
@@ -61,7 +63,7 @@ export default function EditChapterPage() {
         setManga(mangaData);
 
         const chapter = mangaData.chapters?.find(
-          (ch: any) => ch.id === chapterId
+          (ch: Chapter) => ch.id === chapterId
         );
         if (!chapter) {
           alert("Chapter not found");
@@ -78,8 +80,9 @@ export default function EditChapterPage() {
           coinPrice: chapter.coinPrice || 0,
           publishDate: chapter.publishedAt
             ? new Date(
-                chapter.publishedAt.seconds
-                  ? chapter.publishedAt.seconds * 1000
+                typeof chapter.publishedAt === "object" &&
+                "seconds" in chapter.publishedAt
+                  ? (chapter.publishedAt as { seconds: number }).seconds * 1000
                   : chapter.publishedAt
               )
                 .toISOString()
@@ -97,10 +100,12 @@ export default function EditChapterPage() {
     if (mangaId && chapterId) {
       loadChapter();
     }
-  }, [mangaId, chapterId, router]);
+  }, [mangaId, chapterId, router, isAdmin, isTranslator, user?.uid]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!manga) return;
 
     if (formData.pagesEN.length === 0 && formData.pagesMM.length === 0) {
       alert("Please upload at least one page for English or Myanmar");
@@ -111,7 +116,7 @@ export default function EditChapterPage() {
 
     try {
       const mangaRef = doc(db, "mangas", mangaId);
-      const updatedChapters = manga.chapters.map((ch: any) =>
+      const updatedChapters = manga.chapters.map((ch: Chapter) =>
         ch.id === chapterId
           ? {
               ...ch,
@@ -190,6 +195,7 @@ export default function EditChapterPage() {
                 </label>
                 <input
                   type="number"
+                  aria-label="Chapter Number"
                   step="0.1"
                   required
                   value={formData.chapterNumber}
@@ -226,6 +232,7 @@ export default function EditChapterPage() {
                 type="datetime-local"
                 required
                 value={formData.publishDate}
+                placeholder="Select publish date and time"
                 onChange={(e) =>
                   setFormData({ ...formData, publishDate: e.target.value })
                 }
@@ -266,6 +273,7 @@ export default function EditChapterPage() {
                 min="0"
                 step="1"
                 value={formData.coinPrice}
+                placeholder="Enter coin price (0 for membership only)"
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -273,7 +281,6 @@ export default function EditChapterPage() {
                   })
                 }
                 className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="0"
               />
               <p className="text-xs text-zinc-500 mt-2">
                 Set to 0 for free access with membership. Free users can
@@ -310,11 +317,17 @@ export default function EditChapterPage() {
                   multiple: true,
                   resourceType: "image",
                 }}
-                onSuccess={(result: any) => {
-                  if (result.info && result.info.secure_url) {
+                onSuccess={(result) => {
+                  if (
+                    result.info &&
+                    typeof result.info !== "string" &&
+                    "secure_url" in result.info
+                  ) {
+                    const url = (result.info as { secure_url: string })
+                      .secure_url;
                     setFormData((prev) => ({
                       ...prev,
-                      pagesEN: [...prev.pagesEN, result.info.secure_url],
+                      pagesEN: [...prev.pagesEN, url],
                     }));
                   }
                 }}
@@ -338,15 +351,17 @@ export default function EditChapterPage() {
                       key={index}
                       className="relative group aspect-2/3 bg-zinc-800 rounded-lg overflow-hidden"
                     >
-                      <img
+                      <NextImage
                         src={page}
                         alt={`EN Page ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                         <button
                           type="button"
                           onClick={() => removePageEN(index)}
+                          aria-label={`Remove EN page ${index + 1}`}
                           className="p-2 bg-red-500 hover:bg-red-600 rounded-full transition"
                         >
                           <X className="w-5 h-5" />
@@ -374,11 +389,17 @@ export default function EditChapterPage() {
                   multiple: true,
                   resourceType: "image",
                 }}
-                onSuccess={(result: any) => {
-                  if (result.info && result.info.secure_url) {
+                onSuccess={(result) => {
+                  if (
+                    result.info &&
+                    typeof result.info !== "string" &&
+                    "secure_url" in result.info
+                  ) {
+                    const url = (result.info as { secure_url: string })
+                      .secure_url;
                     setFormData((prev) => ({
                       ...prev,
-                      pagesMM: [...prev.pagesMM, result.info.secure_url],
+                      pagesMM: [...prev.pagesMM, url],
                     }));
                   }
                 }}
@@ -402,15 +423,17 @@ export default function EditChapterPage() {
                       key={index}
                       className="relative group aspect-2/3 bg-zinc-800 rounded-lg overflow-hidden"
                     >
-                      <img
+                      <NextImage
                         src={page}
                         alt={`MM Page ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                         <button
                           type="button"
                           onClick={() => removePageMM(index)}
+                          aria-label={`Remove MM page ${index + 1}`}
                           className="p-2 bg-red-500 hover:bg-red-600 rounded-full transition"
                         >
                           <X className="w-5 h-5" />

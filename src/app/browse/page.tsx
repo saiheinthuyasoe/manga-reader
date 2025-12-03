@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Loading from "@/components/Loading";
+import Pagination from "@/components/Pagination";
 import { useSearchParams } from "next/navigation";
 
 interface Manga {
@@ -22,7 +23,7 @@ interface Manga {
 }
 
 export default function BrowsePage() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [mangas, setMangas] = useState<Manga[]>([]);
@@ -32,6 +33,8 @@ export default function BrowsePage() {
   const [selectedGenre, setSelectedGenre] = useState<string>("All");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [selectedType, setSelectedType] = useState<string>("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   // Get all unique genres from mangas
   const allGenres = [
@@ -104,6 +107,7 @@ export default function BrowsePage() {
     }
 
     setFilteredMangas(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [searchQuery, selectedGenre, selectedStatus, selectedType, mangas]);
 
   if (loading || loadingMangas) {
@@ -149,6 +153,7 @@ export default function BrowsePage() {
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+                aria-label="Filter by type"
               >
                 {allTypes.map((type) => (
                   <option key={type} value={type}>
@@ -167,6 +172,7 @@ export default function BrowsePage() {
                 value={selectedGenre}
                 onChange={(e) => setSelectedGenre(e.target.value)}
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+                aria-label="Filter by genre"
               >
                 {allGenres.map((genre) => (
                   <option key={genre} value={genre}>
@@ -185,6 +191,7 @@ export default function BrowsePage() {
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+                aria-label="Filter by status"
               >
                 <option value="All">{t("all")}</option>
                 <option value="Ongoing">{t("ongoing")}</option>
@@ -209,53 +216,69 @@ export default function BrowsePage() {
 
         {/* Manga Grid */}
         {filteredMangas.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {filteredMangas.map((manga) => (
-              <Link
-                key={manga.id}
-                href={`/manga/${manga.id}`}
-                className="group"
-              >
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition">
-                  <div className="aspect-[2/3] relative bg-zinc-800">
-                    {manga.coverImage ? (
-                      <Image
-                        src={manga.coverImage}
-                        alt={manga.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                        No Cover
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {filteredMangas
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((manga) => (
+                  <Link
+                    key={manga.id}
+                    href={`/manga/${manga.id}`}
+                    className="group"
+                  >
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition">
+                      <div className="aspect-2/3 relative bg-zinc-800">
+                        {manga.coverImage ? (
+                          <Image
+                            src={manga.coverImage}
+                            alt={manga.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                            No Cover
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-green-500 transition">
-                      {manga.title}
-                    </h3>
-                    <p className="text-xs text-zinc-400 mb-2">{manga.author}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {manga.genres.slice(0, 2).map((genre) => (
-                        <span
-                          key={genre}
-                          className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded"
-                        >
-                          {genre}
-                        </span>
-                      ))}
-                      {manga.genres.length > 2 && (
-                        <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded">
-                          +{manga.genres.length - 2}
-                        </span>
-                      )}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-green-500 transition">
+                          {manga.title}
+                        </h3>
+                        <p className="text-xs text-zinc-400 mb-2">
+                          {manga.author}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {manga.genres.slice(0, 2).map((genre) => (
+                            <span
+                              key={genre}
+                              className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded"
+                            >
+                              {genre}
+                            </span>
+                          ))}
+                          {manga.genres.length > 2 && (
+                            <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded">
+                              +{manga.genres.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  </Link>
+                ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredMangas.length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredMangas.length}
+            />
+          </>
         ) : (
           <div className="text-center py-16">
             <p className="text-zinc-400 text-lg">{t("noMangaFound")}</p>

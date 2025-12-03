@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import NextImage from "next/image";
 import {
   User,
   Mail,
@@ -103,13 +104,14 @@ export default function ProfilePage() {
         setShowPasswordChange(false);
         setPasswordSuccess("");
       }, 2000);
-    } catch (error: any) {
-      if (error.code === "auth/wrong-password") {
+    } catch (error) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === "auth/wrong-password") {
         setPasswordError("Current password is incorrect");
-      } else if (error.code === "auth/weak-password") {
+      } else if (err.code === "auth/weak-password") {
         setPasswordError("New password is too weak");
       } else {
-        setPasswordError(error.message || "Failed to change password");
+        setPasswordError(err.message || "Failed to change password");
       }
     } finally {
       setChangingPassword(false);
@@ -121,15 +123,18 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-600 to-purple-600 p-6 sm:p-8">
+          <div className="bg-linear-to-r from-green-600 to-purple-600 p-6 sm:p-8">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-zinc-800 rounded-full flex items-center justify-center shrink-0">
                 {user.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt={user.displayName}
-                    className="w-full h-full rounded-full object-cover"
-                  />
+                  <div className="relative w-full h-full">
+                    <NextImage
+                      src={user.photoURL}
+                      alt={user.displayName}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </div>
                 ) : (
                   <User className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-400" />
                 )}
