@@ -197,17 +197,21 @@ export default function ManageMangaPage() {
                         className="hover:bg-zinc-800/50 transition"
                       >
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-4">
+                          <Link
+                            href={`/manga/${manga.id}`}
+                            className="flex items-center gap-4 hover:opacity-80 transition"
+                          >
                             <div className="relative w-12 h-16">
                               <NextImage
                                 src={manga.coverImage}
                                 alt={manga.title}
                                 fill
                                 className="object-cover rounded"
+                                unoptimized
                               />
                             </div>
                             <div>
-                              <p className="text-white font-medium">
+                              <p className="text-white font-medium hover:text-green-400 transition">
                                 {manga.title}
                               </p>
                               <div className="flex flex-wrap gap-1 mt-1">
@@ -221,7 +225,7 @@ export default function ManageMangaPage() {
                                 ))}
                               </div>
                             </div>
-                          </div>
+                          </Link>
                         </td>
                         <td className="px-6 py-4 text-zinc-300">
                           {manga.author}

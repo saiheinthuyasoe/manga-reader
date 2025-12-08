@@ -145,6 +145,7 @@ export default function BookmarksPage() {
                               src={manga.coverImage}
                               alt={manga.title}
                               fill
+                              unoptimized
                               className="object-cover group-hover:scale-105 transition"
                             />
                           ) : (

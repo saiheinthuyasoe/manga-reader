@@ -2,12 +2,10 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  User,
   GoogleAuthProvider,
   signInWithPopup,
   fetchSignInMethodsForEmail,
   linkWithCredential,
-  EmailAuthProvider,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
@@ -142,9 +140,11 @@ export async function signInWithGoogle(): Promise<UserProfile> {
       typeof error === "object" &&
       error !== null &&
       "code" in error &&
-      (error as { code: string }).code === "auth/account-exists-with-different-credential"
+      (error as { code: string }).code ===
+        "auth/account-exists-with-different-credential"
     ) {
-      const email = (error as { customData?: { email?: string } }).customData?.email;
+      const email = (error as { customData?: { email?: string } }).customData
+        ?.email;
 
       if (email) {
         // Get existing sign-in methods for this email

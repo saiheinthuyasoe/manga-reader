@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import {
   Share2,
   Eye,
-  Star,
   Calendar,
   User,
   Palette,
@@ -18,6 +17,7 @@ import { Manga, Chapter } from "@/types/manga";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import BookmarkButton from "@/components/BookmarkButton";
+import RatingComponent from "@/components/RatingComponent";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -63,20 +63,53 @@ export default function MangaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { t } = useLanguage();
-  const { user, hasMembership } = useAuth();
+  const { user, hasMembership, loading: authLoading } = useAuth();
   const [manga, setManga] = useState<Manga | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [views, setViews] = useState(0);
+  const [viewCounted, setViewCounted] = useState(false);
 
   useEffect(() => {
     const fetchManga = async () => {
       const { id } = await params;
       const mangaData = await getMangaById(id);
       setManga(mangaData);
+      setViews(mangaData?.views || 0);
       setLoading(false);
     };
     fetchManga();
   }, [params]);
+
+  // Separate effect for view counting - runs once after auth is loaded
+  useEffect(() => {
+    if (authLoading || !manga || viewCounted) return;
+
+    const incrementView = async () => {
+      try {
+        console.log("Calling view API with userId:", user?.uid);
+        const response = await fetch(`/api/manga/${manga.id}/view`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user?.uid || null,
+          }),
+        });
+        const data = await response.json();
+        console.log("View API response:", data);
+        if (data.success) {
+          setViews(data.views);
+        }
+        setViewCounted(true);
+      } catch (error) {
+        console.error("Error updating view count:", error);
+      }
+    };
+
+    incrementView();
+  }, [manga, user, authLoading, viewCounted]);
 
   const canAccessChapter = (chapter: Chapter) => {
     // Free chapters are accessible to everyone
@@ -151,6 +184,7 @@ export default function MangaDetailPage({
           src={manga.bannerImage || manga.coverImage}
           alt={manga.title}
           fill
+          unoptimized
           className="object-cover opacity-30"
           priority
         />
@@ -167,6 +201,7 @@ export default function MangaDetailPage({
                 src={manga.coverImage}
                 alt={manga.title}
                 fill
+                unoptimized
                 className="object-cover"
               />
             </div>
@@ -185,13 +220,23 @@ export default function MangaDetailPage({
 
             {/* Stats */}
             <div className="flex flex-wrap gap-4 sm:gap-6 mb-4 sm:mb-6 text-sm sm:text-base">
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                <span className="font-semibold">{manga.rating.toFixed(1)}</span>
-              </div>
+              <RatingComponent
+                mangaId={manga.id}
+                initialRating={manga.rating || 0}
+                initialCount={
+                  (manga as { ratingCount?: number }).ratingCount || 0
+                }
+              />
               <div className="flex items-center gap-2">
                 <Eye className="w-5 h-5 text-green-500" />
-                <span>{(manga.views / 1000000).toFixed(2)}M views</span>
+                <span>
+                  {views >= 1000000
+                    ? `${(views / 1000000).toFixed(2)}M`
+                    : views >= 1000
+                    ? `${(views / 1000).toFixed(1)}K`
+                    : views}{" "}
+                  views
+                </span>
               </div>
               <div
                 className={`px-3 py-1 rounded-full text-sm font-semibold ${

@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import NextImage from "next/image";
-import { ArrowLeft, X, ImagePlus } from "lucide-react";
-import { CldUploadWidget } from "next-cloudinary";
+import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { Manga, Chapter } from "@/types/manga";
 import Loading from "@/components/Loading";
+import R2MultiUploadWidget from "@/components/R2MultiUploadWidget";
 
 export default function EditChapterPage() {
   const params = useParams();
@@ -305,148 +304,34 @@ export default function EditChapterPage() {
             </div>
 
             {/* English Pages Upload */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                English Pages ({formData.pagesEN.length} uploaded)
-              </label>
-              <CldUploadWidget
-                uploadPreset="ml_default"
-                signatureEndpoint="/api/cloudinary-signature"
-                options={{
-                  folder: `manga-reader/chapters/${mangaId}/EN`,
-                  multiple: true,
-                  resourceType: "image",
-                }}
-                onSuccess={(result) => {
-                  if (
-                    result.info &&
-                    typeof result.info !== "string" &&
-                    "secure_url" in result.info
-                  ) {
-                    const url = (result.info as { secure_url: string })
-                      .secure_url;
-                    setFormData((prev) => ({
-                      ...prev,
-                      pagesEN: [...prev.pagesEN, url],
-                    }));
-                  }
-                }}
-              >
-                {({ open }) => (
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
-                  >
-                    <ImagePlus className="w-10 h-10 text-green-500" />
-                    <span className="text-zinc-400">Upload English pages</span>
-                  </button>
-                )}
-              </CldUploadWidget>
-
-              {formData.pagesEN.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {formData.pagesEN.map((page, index) => (
-                    <div
-                      key={index}
-                      className="relative group aspect-2/3 bg-zinc-800 rounded-lg overflow-hidden"
-                    >
-                      <NextImage
-                        src={page}
-                        alt={`EN Page ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={() => removePageEN(index)}
-                          aria-label={`Remove EN page ${index + 1}`}
-                          className="p-2 bg-red-500 hover:bg-red-600 rounded-full transition"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="absolute bottom-2 left-2 bg-green-600 px-2 py-1 rounded text-xs font-semibold">
-                        EN {index + 1}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <R2MultiUploadWidget
+              folder={`manga-chapters/${mangaId}/EN`}
+              values={formData.pagesEN}
+              onSuccess={(urls) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesEN: [...prev.pagesEN, ...urls],
+                }))
+              }
+              onRemove={removePageEN}
+              label="English Pages"
+              language="EN"
+            />
 
             {/* Myanmar Pages Upload */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Myanmar Pages ({formData.pagesMM.length} uploaded)
-              </label>
-              <CldUploadWidget
-                uploadPreset="ml_default"
-                signatureEndpoint="/api/cloudinary-signature"
-                options={{
-                  folder: `manga-reader/chapters/${mangaId}/MM`,
-                  multiple: true,
-                  resourceType: "image",
-                }}
-                onSuccess={(result) => {
-                  if (
-                    result.info &&
-                    typeof result.info !== "string" &&
-                    "secure_url" in result.info
-                  ) {
-                    const url = (result.info as { secure_url: string })
-                      .secure_url;
-                    setFormData((prev) => ({
-                      ...prev,
-                      pagesMM: [...prev.pagesMM, url],
-                    }));
-                  }
-                }}
-              >
-                {({ open }) => (
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-purple-500 transition flex flex-col items-center gap-2"
-                  >
-                    <ImagePlus className="w-10 h-10 text-purple-500" />
-                    <span className="text-zinc-400">Upload Myanmar pages</span>
-                  </button>
-                )}
-              </CldUploadWidget>
-
-              {formData.pagesMM.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {formData.pagesMM.map((page, index) => (
-                    <div
-                      key={index}
-                      className="relative group aspect-2/3 bg-zinc-800 rounded-lg overflow-hidden"
-                    >
-                      <NextImage
-                        src={page}
-                        alt={`MM Page ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={() => removePageMM(index)}
-                          aria-label={`Remove MM page ${index + 1}`}
-                          className="p-2 bg-red-500 hover:bg-red-600 rounded-full transition"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="absolute bottom-2 left-2 bg-purple-600 px-2 py-1 rounded text-xs font-semibold">
-                        MM {index + 1}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <R2MultiUploadWidget
+              folder={`manga-chapters/${mangaId}/MM`}
+              values={formData.pagesMM}
+              onSuccess={(urls) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesMM: [...prev.pagesMM, ...urls],
+                }))
+              }
+              onRemove={removePageMM}
+              label="Myanmar Pages"
+              language="MM"
+            />
           </div>
 
           {/* Action Buttons */}

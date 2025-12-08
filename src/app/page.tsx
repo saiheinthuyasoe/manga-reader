@@ -13,7 +13,8 @@ type BeforeInstallPromptEvent = Event & {
 
 export default function Home() {
   const { t } = useLanguage();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function Home() {
           src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1920&h=500&fit=crop"
           alt="Hero Banner"
           fill
+          unoptimized
           className="object-cover opacity-40"
           priority
         />

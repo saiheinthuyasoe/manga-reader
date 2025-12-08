@@ -20,6 +20,12 @@ export default function MangaCard({ manga }: MangaCardProps) {
             fill
             className="object-cover"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            unoptimized
+            onError={(e) => {
+              console.error("Failed to load image:", manga.coverImage);
+              // Fallback to a placeholder
+              e.currentTarget.src = "/placeholder-manga.png";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 

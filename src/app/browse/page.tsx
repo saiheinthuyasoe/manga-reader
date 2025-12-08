@@ -6,11 +6,21 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
+import { BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Loading from "@/components/Loading";
 import Pagination from "@/components/Pagination";
 import { useSearchParams } from "next/navigation";
+
+interface Chapter {
+  id: string;
+  chapterNumber: number;
+  title: string;
+  language: string;
+  pagesEN?: string[];
+  pagesMM?: string[];
+}
 
 interface Manga {
   id: string;
@@ -21,6 +31,7 @@ interface Manga {
   type: string[];
   genres: string[];
   status: string;
+  chapters?: Chapter[];
 }
 
 function BrowseContent() {
@@ -61,10 +72,24 @@ function BrowseContent() {
     const fetchMangas = async () => {
       try {
         const mangasSnapshot = await getDocs(collection(db, "mangas"));
-        const mangasList = mangasSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Manga[];
+        const mangasList = mangasSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          // Chapters are stored as an array in the manga document
+          const allChapters = (data.chapters || []) as Chapter[];
+          // Get the latest 3 chapters sorted by chapter number
+          const latestChapters = allChapters
+            .sort((a, b) => b.chapterNumber - a.chapterNumber)
+            .slice(0, 3);
+
+          console.log(`Manga ${doc.id} chapters:`, latestChapters);
+
+          return {
+            id: doc.id,
+            ...data,
+            chapters: latestChapters,
+          };
+        }) as Manga[];
+        console.log("Fetched mangas with chapters:", mangasList);
         setMangas(mangasList);
         setFilteredMangas(mangasList);
       } catch (error) {
@@ -218,58 +243,126 @@ function BrowseContent() {
         {/* Manga Grid */}
         {filteredMangas.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredMangas
                 .slice(
                   (currentPage - 1) * itemsPerPage,
                   currentPage * itemsPerPage
                 )
                 .map((manga) => (
-                  <Link
+                  <div
                     key={manga.id}
-                    href={`/manga/${manga.id}`}
-                    className="group"
+                    className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition flex h-52 group"
                   >
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-600 transition">
-                      <div className="aspect-2/3 relative bg-zinc-800">
-                        {manga.coverImage ? (
+                    {/* Cover Image - Clickable to manga detail */}
+                    <Link
+                      href={`/manga/${manga.id}`}
+                      className="w-36 shrink-0 relative bg-zinc-800"
+                    >
+                      {manga.coverImage ? (
+                        <>
                           <Image
                             src={manga.coverImage}
                             alt={manga.title}
                             fill
-                            className="object-cover group-hover:scale-105 transition"
+                            unoptimized
+                            className="object-cover"
                           />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                            No Cover
-                          </div>
-                        )}
+                          <div className="absolute inset-0 bg-zinc-800 animate-pulse -z-10" />
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">
+                          No Cover
+                        </div>
+                      )}
+                      {/* Language badges */}
+                      <div className="absolute top-2 left-2 flex gap-1">
+                        {(() => {
+                          const hasEN = manga.chapters?.some(
+                            (ch) => ch.pagesEN && ch.pagesEN.length > 0
+                          );
+                          const hasMM = manga.chapters?.some(
+                            (ch) => ch.pagesMM && ch.pagesMM.length > 0
+                          );
+
+                          if (hasEN && hasMM) {
+                            return (
+                              <span className="bg-green-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                                EN/MM
+                              </span>
+                            );
+                          } else if (hasEN) {
+                            return (
+                              <span className="bg-green-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                                EN
+                              </span>
+                            );
+                          } else if (hasMM) {
+                            return (
+                              <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                                MM
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-green-500 transition">
-                          {manga.title}
-                        </h3>
-                        <p className="text-xs text-zinc-400 mb-2">
-                          {manga.author}
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {manga.genres.slice(0, 2).map((genre) => (
-                            <span
-                              key={genre}
-                              className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded"
-                            >
+                    </Link>
+
+                    {/* Info Section */}
+                    <div className="flex-1 p-5 flex flex-col">
+                      {/* Title and genres - Clickable to manga detail */}
+                      <div className="mb-4">
+                        <Link href={`/manga/${manga.id}`}>
+                          <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-green-500 transition cursor-pointer">
+                            {manga.title}
+                          </h3>
+                        </Link>
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {manga.genres.slice(0, 3).map((genre) => (
+                            <span key={genre} className="text-sm text-zinc-400">
                               {genre}
+                              {manga.genres.indexOf(genre) <
+                                Math.min(2, manga.genres.length - 1) && ", "}
                             </span>
                           ))}
-                          {manga.genres.length > 2 && (
-                            <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded">
-                              +{manga.genres.length - 2}
-                            </span>
-                          )}
                         </div>
                       </div>
+
+                      {/* Chapters List */}
+                      <div className="mt-auto space-y-2.5">
+                        {manga.chapters && manga.chapters.length > 0 ? (
+                          manga.chapters.map((chapter) => {
+                            const hasEN =
+                              chapter.pagesEN && chapter.pagesEN.length > 0;
+                            const hasMM =
+                              chapter.pagesMM && chapter.pagesMM.length > 0;
+                            let langLabel = "";
+                            if (hasEN && hasMM) langLabel = "[EN/MM]";
+                            else if (hasEN) langLabel = "[EN]";
+                            else if (hasMM) langLabel = "[MM]";
+
+                            return (
+                              <Link
+                                key={chapter.id}
+                                href={`/read/${manga.id}/${chapter.id}`}
+                                className="flex items-center gap-2 text-sm hover:text-green-500 transition"
+                              >
+                                <BookOpen className="w-4 h-4 text-purple-500" />
+                                <span className="text-purple-500">
+                                  Chap {chapter.chapterNumber} {langLabel}
+                                </span>
+                              </Link>
+                            );
+                          })
+                        ) : (
+                          <p className="text-xs text-zinc-500">
+                            No chapters available
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
             </div>
             <Pagination

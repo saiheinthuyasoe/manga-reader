@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "pub-ce27b8af752c4ae98c3ec5e2d5a66454.r2.dev", // Your actual R2 public URL
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

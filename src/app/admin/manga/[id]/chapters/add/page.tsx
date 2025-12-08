@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { CldUploadWidget } from "next-cloudinary";
 import { PlusCircle, Upload, X, ArrowLeft, ImagePlus } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMangaById, updateManga } from "@/lib/db";
 import { Manga } from "@/types/manga";
+import R2MultiUploadWidget from "@/components/R2MultiUploadWidget";
 
 export default function AddChapterPage() {
   const router = useRouter();
@@ -288,154 +288,34 @@ export default function AddChapterPage() {
             </div>
 
             {/* English Pages Upload */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                <span className="inline-flex items-center gap-2">
-                  English Pages ({formData.pagesEN.length} uploaded)
-                  <span className="text-xs text-zinc-500">Optional</span>
-                </span>
-              </label>
-
-              <CldUploadWidget
-                uploadPreset="ml_default"
-                signatureEndpoint="/api/cloudinary-signature"
-                options={{
-                  folder: `manga-reader/chapters/${params.id}/EN`,
-                  multiple: true,
-                  maxFiles: 100,
-                }}
-                onSuccess={(result) => {
-                  if (
-                    result.info &&
-                    typeof result.info !== "string" &&
-                    "secure_url" in result.info
-                  ) {
-                    const url = result.info.secure_url;
-                    setFormData((prev) => ({
-                      ...prev,
-                      pagesEN: [...prev.pagesEN, url],
-                    }));
-                  }
-                }}
-              >
-                {({ open }) => (
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
-                  >
-                    <ImagePlus className="w-10 h-10 text-green-500" />
-                    <span className="text-zinc-400">
-                      Click to upload English pages
-                    </span>
-                    <span className="text-zinc-600 text-sm">
-                      You can select multiple images at once
-                    </span>
-                  </button>
-                )}
-              </CldUploadWidget>
-
-              {/* English Pages Preview Grid */}
-              {formData.pagesEN.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {formData.pagesEN.map((page, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={page}
-                        alt={`EN Page ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <div className="absolute top-2 left-2 px-2 py-1 bg-green-600 rounded text-xs text-white font-semibold">
-                        EN {index + 1}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removePageEN(index)}
-                        className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700 opacity-0 group-hover:opacity-100 transition"
-                        aria-label={`Remove EN page ${index + 1}`}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <R2MultiUploadWidget
+              folder={`manga-chapters/${params.id}/EN`}
+              values={formData.pagesEN}
+              onSuccess={(urls) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesEN: [...prev.pagesEN, ...urls],
+                }))
+              }
+              onRemove={removePageEN}
+              label="English Pages"
+              language="EN"
+            />
 
             {/* Myanmar Pages Upload */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                <span className="inline-flex items-center gap-2">
-                  Myanmar Pages ({formData.pagesMM.length} uploaded)
-                  <span className="text-xs text-zinc-500">Optional</span>
-                </span>
-              </label>
-
-              <CldUploadWidget
-                uploadPreset="ml_default"
-                signatureEndpoint="/api/cloudinary-signature"
-                options={{
-                  folder: `manga-reader/chapters/${params.id}/MM`,
-                  multiple: true,
-                  maxFiles: 100,
-                }}
-                onSuccess={(result) => {
-                  if (
-                    result.info &&
-                    typeof result.info !== "string" &&
-                    "secure_url" in result.info
-                  ) {
-                    const url = result.info.secure_url;
-                    setFormData((prev) => ({
-                      ...prev,
-                      pagesMM: [...prev.pagesMM, url],
-                    }));
-                  }
-                }}
-              >
-                {({ open }) => (
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-purple-500 transition flex flex-col items-center gap-2"
-                  >
-                    <ImagePlus className="w-10 h-10 text-purple-500" />
-                    <span className="text-zinc-400">
-                      Click to upload Myanmar pages
-                    </span>
-                    <span className="text-zinc-600 text-sm">
-                      You can select multiple images at once
-                    </span>
-                  </button>
-                )}
-              </CldUploadWidget>
-
-              {/* Myanmar Pages Preview Grid */}
-              {formData.pagesMM.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {formData.pagesMM.map((page, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={page}
-                        alt={`MM Page ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <div className="absolute top-2 left-2 px-2 py-1 bg-purple-600 rounded text-xs text-white font-semibold">
-                        MM {index + 1}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removePageMM(index)}
-                        className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700 opacity-0 group-hover:opacity-100 transition"
-                        aria-label={`Remove MM page ${index + 1}`}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <R2MultiUploadWidget
+              folder={`manga-chapters/${params.id}/MM`}
+              values={formData.pagesMM}
+              onSuccess={(urls) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesMM: [...prev.pagesMM, ...urls],
+                }))
+              }
+              onRemove={removePageMM}
+              label="Myanmar Pages"
+              language="MM"
+            />
 
             {/* Submit Buttons */}
             <div className="flex gap-4 pt-4">

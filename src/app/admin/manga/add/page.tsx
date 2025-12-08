@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CldUploadWidget } from "next-cloudinary";
-import { PlusCircle, Upload, X, ImagePlus } from "lucide-react";
-import NextImage from "next/image";
+import { PlusCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { addManga } from "@/lib/db";
 import { Manga } from "@/types/manga";
+import R2UploadWidget from "@/components/R2UploadWidget";
 
 export default function AddMangaPage() {
   const router = useRouter();
@@ -105,132 +104,29 @@ export default function AddMangaPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Cover Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Cover Image *
-              </label>
-              <CldUploadWidget
-                uploadPreset="ml_default"
-                signatureEndpoint="/api/cloudinary-signature"
-                options={{ folder: "manga-reader/manga-cover" }}
-                onSuccess={(result) => {
-                  if (
-                    result.info &&
-                    typeof result.info !== "string" &&
-                    "secure_url" in result.info
-                  ) {
-                    const url = (result.info as { secure_url: string })
-                      .secure_url;
-                    setFormData((prev) => ({
-                      ...prev,
-                      coverImage: url,
-                    }));
-                  }
-                }}
-              >
-                {({ open }) => (
-                  <div>
-                    {formData.coverImage ? (
-                      <div className="relative">
-                        <div className="relative w-48 h-72">
-                          <NextImage
-                            src={formData.coverImage}
-                            alt="Cover preview"
-                            fill
-                            className="object-cover rounded-lg"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData({ ...formData, coverImage: "" })
-                          }
-                          className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700"
-                          aria-label="Remove cover image"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => open()}
-                        className="w-full p-8 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
-                      >
-                        <ImagePlus className="w-12 h-12 text-zinc-500" />
-                        <span className="text-zinc-400">
-                          Click to upload cover image
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                )}
-              </CldUploadWidget>
-            </div>
+            <R2UploadWidget
+              folder="manga-covers"
+              value={formData.coverImage}
+              onSuccess={(url) =>
+                setFormData((prev) => ({ ...prev, coverImage: url }))
+              }
+              onRemove={() => setFormData({ ...formData, coverImage: "" })}
+              aspectRatio="cover"
+              label="Cover Image"
+              required
+            />
 
             {/* Banner Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Banner Image (Optional)
-              </label>
-              <CldUploadWidget
-                uploadPreset="ml_default"
-                signatureEndpoint="/api/cloudinary-signature"
-                options={{ folder: "manga-reader/manga-banner" }}
-                onSuccess={(result) => {
-                  if (
-                    result.info &&
-                    typeof result.info !== "string" &&
-                    "secure_url" in result.info
-                  ) {
-                    const url = (result.info as { secure_url: string })
-                      .secure_url;
-                    setFormData((prev) => ({
-                      ...prev,
-                      bannerImage: url,
-                    }));
-                  }
-                }}
-              >
-                {({ open }) => (
-                  <div>
-                    {formData.bannerImage ? (
-                      <div className="relative">
-                        <div className="relative w-full h-48">
-                          <NextImage
-                            src={formData.bannerImage}
-                            alt="Banner preview"
-                            fill
-                            className="object-cover rounded-lg"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData({ ...formData, bannerImage: "" })
-                          }
-                          className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700"
-                          aria-label="Remove banner image"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => open()}
-                        className="w-full p-6 border-2 border-dashed border-zinc-700 rounded-lg hover:border-green-500 transition flex flex-col items-center gap-2"
-                      >
-                        <Upload className="w-8 h-8 text-zinc-500" />
-                        <span className="text-zinc-400 text-sm">
-                          Click to upload banner image
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                )}
-              </CldUploadWidget>
-            </div>
+            <R2UploadWidget
+              folder="manga-banners"
+              value={formData.bannerImage}
+              onSuccess={(url) =>
+                setFormData((prev) => ({ ...prev, bannerImage: url }))
+              }
+              onRemove={() => setFormData({ ...formData, bannerImage: "" })}
+              aspectRatio="banner"
+              label="Banner Image (Optional)"
+            />
 
             {/* Title */}
             <div>
