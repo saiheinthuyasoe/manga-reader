@@ -117,6 +117,21 @@ export async function updateManga(
   await updateDoc(mangaDoc, updates);
 }
 
+// Delete chapter from manga
+export async function deleteChapterFromManga(
+  mangaId: string,
+  chapterId: string
+): Promise<void> {
+  const mangaDoc = doc(db, "mangas", mangaId);
+  const mangaSnap = await getDoc(mangaDoc);
+  if (!mangaSnap.exists()) return;
+  const data = mangaSnap.data();
+  const chapters = (data.chapters || []).filter(
+    (ch: any) => ch.id !== chapterId
+  );
+  await updateDoc(mangaDoc, { chapters });
+}
+
 // Delete manga
 export async function deleteManga(id: string): Promise<void> {
   const mangaDoc = doc(db, "mangas", id);
