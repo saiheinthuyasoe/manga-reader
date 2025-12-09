@@ -151,13 +151,13 @@ export default function R2MultiUploadWidget({
 
       {/* Preview Grid */}
       {values.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {values.map((page, index) => (
             <div key={index} className="relative group">
               <img
                 src={page}
                 alt={`${language} Page ${index + 1}`}
-                className="w-full h-48 object-cover rounded-lg"
+                className="w-full h-40 sm:h-48 object-cover rounded-lg"
               />
               <div
                 className={`absolute top-2 left-2 px-2 py-1 bg-${colorClass}-600 rounded text-xs text-white font-semibold`}
@@ -167,8 +167,9 @@ export default function R2MultiUploadWidget({
               <button
                 type="button"
                 onClick={() => onRemove(index)}
-                className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700 opacity-0 group-hover:opacity-100 transition"
+                className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700 transition"
                 aria-label={`Remove ${language} page ${index + 1}`}
+                style={{ opacity: '1' }}
               >
                 <X className="w-4 h-4" />
               </button>
