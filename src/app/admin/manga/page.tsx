@@ -103,26 +103,28 @@ export default function ManageMangaPage() {
 
   return (
     <div className="min-h-screen bg-black pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <BookOpen className="w-8 h-8 text-green-500" />
-            <h1 className="text-3xl font-bold text-white">Manage Manga</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              Manage Manga
+            </h1>
           </div>
           <Link
             href="/admin/manga/add"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
+            className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base rounded-lg font-semibold transition"
           >
-            <PlusCircle className="w-5 h-5" />
+            <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
             Add New Manga
           </Link>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-zinc-500" />
             <input
               type="text"
               placeholder="Search by title, author, or genre..."
@@ -131,7 +133,7 @@ export default function ManageMangaPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-zinc-900 text-white rounded-lg pl-12 pr-4 py-3 border border-zinc-800 focus:outline-none focus:border-green-500"
+              className="w-full bg-zinc-900 text-white text-sm sm:text-base rounded-lg pl-10 sm:pl-12 pr-4 py-2 sm:py-3 border border-zinc-800 focus:outline-none focus:border-green-500"
             />
           </div>
         </div>
@@ -156,7 +158,8 @@ export default function ManageMangaPage() {
           </div>
         ) : (
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-zinc-800">
                   <tr>
@@ -296,6 +299,96 @@ export default function ManageMangaPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-zinc-800">
+              {filteredMangas
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((manga) => (
+                  <div key={manga.id} className="p-4 hover:bg-zinc-800/50">
+                    <Link
+                      href={`/manga/${manga.id}`}
+                      className="flex gap-3 mb-3"
+                    >
+                      <div className="relative w-16 h-20 flex-shrink-0">
+                        <NextImage
+                          src={manga.coverImage}
+                          alt={manga.title}
+                          fill
+                          className="object-cover rounded"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium line-clamp-2 mb-1">
+                          {manga.title}
+                        </p>
+                        <p className="text-zinc-400 text-sm mb-1">
+                          {manga.author}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {manga.genres.slice(0, 2).map((genre) => (
+                            <span
+                              key={genre}
+                              className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded"
+                            >
+                              {genre}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </Link>
+                    <div className="flex items-center justify-between mb-3 text-sm">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-semibold ${
+                          manga.status === "ongoing"
+                            ? "bg-green-500/20 text-green-400"
+                            : manga.status === "completed"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                        }`}
+                      >
+                        {manga.status.charAt(0).toUpperCase() +
+                          manga.status.slice(1)}
+                      </span>
+                      <div className="flex gap-3 text-zinc-400 text-xs">
+                        <span>{manga.chapters.length} Ch</span>
+                        <span>{manga.views.toLocaleString()} Views</span>
+                      </div>
+                    </div>
+                    {isAdmin && manga.createdBy && userMap[manga.createdBy] && (
+                      <p className="text-zinc-500 text-xs mb-3">
+                        Owner: {userMap[manga.createdBy].name}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/manga/${manga.id}/chapters`}
+                        className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs text-center font-medium transition"
+                      >
+                        Chapters
+                      </Link>
+                      <Link
+                        href={`/admin/manga/${manga.id}/edit`}
+                        className="p-2 hover:bg-zinc-700 rounded-lg transition"
+                      >
+                        <Edit className="w-4 h-4 text-green-400" />
+                      </Link>
+                      <button
+                        title="delete-button"
+                        onClick={() => handleDelete(manga.id, manga.title)}
+                        className="p-2 hover:bg-zinc-700 rounded-lg transition"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
             <Pagination
               currentPage={currentPage}
               totalPages={Math.ceil(filteredMangas.length / itemsPerPage)}

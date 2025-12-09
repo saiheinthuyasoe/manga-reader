@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
 import Pagination from "@/components/Pagination";
 import { db } from "@/lib/firebase";
-import { collection, doc, updateDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  updateDoc,
+  onSnapshot,
+  addDoc,
+} from "firebase/firestore";
 import { UserProfile } from "@/types/user";
 import {
   Users,
@@ -337,6 +343,18 @@ export default function ManageUsersPage() {
           ? currentCoins + coinAmount
           : currentCoins - coinAmount;
 
+      // Create coin transaction record
+      await addDoc(collection(db, "coinTransactions"), {
+        userId: coinUser.uid,
+        type: coinAction === "add" ? "admin_add" : "admin_deduct",
+        amount: coinAction === "add" ? coinAmount : -coinAmount,
+        balance: newCoins,
+        description: `Admin ${
+          coinAction === "add" ? "added" : "deducted"
+        } ${coinAmount} coins`,
+        createdAt: new Date(),
+      });
+
       await updateDoc(doc(db, "users", coinUser.uid), {
         coins: newCoins,
         updatedAt: new Date(),
@@ -394,23 +412,23 @@ export default function ManageUsersPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Users className="w-8 h-8 text-green-500" />
-            <h1 className="text-3xl font-bold">Manage Users</h1>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
+            <h1 className="text-2xl sm:text-3xl font-bold">Manage Users</h1>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
+            className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base rounded-lg font-semibold transition"
           >
-            <UserPlus className="w-5 h-5" />
+            <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
             Create User
           </button>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -419,12 +437,13 @@ export default function ManageUsersPage() {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-zinc-900 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
           />
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-zinc-800">
                 <tr>
@@ -604,6 +623,146 @@ export default function ManageUsersPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile/Tablet Cards */}
+          <div className="lg:hidden divide-y divide-zinc-800">
+            {users
+              .filter((u) =>
+                searchQuery
+                  ? u.displayName
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase()) ||
+                    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+                  : true
+              )
+              .slice(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+              )
+              .map((u) => (
+                <div key={u.uid} className="p-4 hover:bg-zinc-800/50">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold truncate">
+                          {u.displayName}
+                        </p>
+                        {u.role === "admin" && (
+                          <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-sm text-zinc-400 truncate mb-2">
+                        {u.email}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            u.role === "admin"
+                              ? "bg-yellow-500/20 text-yellow-500"
+                              : u.role === "translator"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-zinc-700 text-zinc-300"
+                          }`}
+                        >
+                          {u.role.toUpperCase()}
+                        </span>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            u.accountType === "membership"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-zinc-700 text-zinc-300"
+                          }`}
+                        >
+                          {u.accountType === "membership" ? "MEMBER" : "FREE"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-3 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Coins className="w-4 h-4 text-yellow-500" />
+                      <span className="font-semibold text-yellow-500">
+                        {u.coins || 0}
+                      </span>
+                    </div>
+                    {u.accountType === "membership" && (
+                      <span
+                        className={
+                          isExpired(u) ? "text-red-500" : "text-green-500"
+                        }
+                      >
+                        {isExpired(u) ? "Expired" : "Active"}
+                      </span>
+                    )}
+                  </div>
+
+                  {u.accountType === "membership" && u.membershipEndDate && (
+                    <div className="text-xs text-zinc-400 mb-3">
+                      <p>Ends: {formatDate(u.membershipEndDate)}</p>
+                      <p>{getDaysRemaining(u.membershipEndDate)}</p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => openEditModal(u)}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition flex items-center gap-1"
+                    >
+                      <Edit className="w-3 h-3" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => openRoleModal(u)}
+                      className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded transition flex items-center gap-1"
+                    >
+                      <UserCog className="w-3 h-3" />
+                      Role
+                    </button>
+                    <button
+                      onClick={() => openCoinModal(u)}
+                      className="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white text-xs rounded transition flex items-center gap-1"
+                    >
+                      <Coins className="w-3 h-3" />
+                      Coins
+                    </button>
+                    {u.accountType === "membership" ? (
+                      <>
+                        <button
+                          onClick={() => handleRevokeMembership(u.uid)}
+                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition"
+                        >
+                          Revoke
+                        </button>
+                        <button
+                          onClick={() => openMembershipModal(u)}
+                          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition"
+                        >
+                          Extend
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => openMembershipModal(u)}
+                        className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition"
+                      >
+                        Grant
+                      </button>
+                    )}
+                    {u.uid !== user?.uid && (
+                      <button
+                        onClick={() => handleDeleteUser(u.uid, u.displayName)}
+                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+
           <Pagination
             currentPage={currentPage}
             totalPages={Math.ceil(

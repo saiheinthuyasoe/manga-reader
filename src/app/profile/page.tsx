@@ -13,6 +13,9 @@ import {
   Lock,
   AlertCircle,
   CheckCircle,
+  Coins,
+  History,
+  ShoppingBag,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
@@ -244,7 +247,7 @@ export default function ProfilePage() {
             )}
 
             {/* Stats */}
-            <div className="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="mt-6 sm:mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <div className="p-3 sm:p-4 bg-zinc-800 rounded-lg text-center">
                 <p className="text-xl sm:text-2xl font-bold text-white">
                   {user.bookmarks?.length || 0}
@@ -259,6 +262,36 @@ export default function ProfilePage() {
                   Reading History
                 </p>
               </div>
+              <div className="p-3 sm:p-4 bg-zinc-800 rounded-lg text-center">
+                <p className="text-xl sm:text-2xl font-bold text-yellow-500">
+                  {user.coins || 0}
+                </p>
+                <p className="text-xs sm:text-sm text-zinc-400">Coins</p>
+              </div>
+              <div className="p-3 sm:p-4 bg-zinc-800 rounded-lg text-center">
+                <p className="text-xl sm:text-2xl font-bold text-white">
+                  {user.purchasedChapters?.length || 0}
+                </p>
+                <p className="text-xs sm:text-sm text-zinc-400">Purchases</p>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <button
+                onClick={() => router.push("/transactions")}
+                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm sm:text-base"
+              >
+                <History className="w-4 h-4 sm:w-5 sm:h-5" />
+                Transaction History
+              </button>
+              <button
+                onClick={() => router.push("/purchases")}
+                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm sm:text-base"
+              >
+                <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
+                Purchase History
+              </button>
             </div>
 
             {/* Actions */}

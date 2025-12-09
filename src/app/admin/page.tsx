@@ -14,6 +14,7 @@ import {
   UserX,
   CheckCircle,
   BookOpen,
+  History,
 } from "lucide-react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -124,68 +125,55 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Shield className="w-8 h-8 text-purple-500" />
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              Dashboard
+            </h1>
           </div>
-          <div className="flex gap-3">
-            <Link
-              href="/admin/manga"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
-            >
-              <BookOpen className="w-5 h-5" />
-              Manage Manga
-            </Link>
-            {isAdmin && (
-              <Link
-                href="/admin/users"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition"
-              >
-                <Users className="w-5 h-5" />
-                Manage Users
-              </Link>
-            )}
-          </div>
+          <p className="text-zinc-400 mt-2 text-sm sm:text-base">
+            Welcome back! Here&apos;s an overview of your platform.
+          </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-zinc-400 text-sm">Total Users</p>
-                <p className="text-3xl font-bold text-white mt-2">
+                <p className="text-zinc-400 text-xs sm:text-sm">Total Users</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white mt-1 sm:mt-2">
                   {stats.total}
                 </p>
               </div>
-              <Users className="w-12 h-12 text-green-500" />
+              <Users className="w-8 h-8 sm:w-12 sm:h-12 text-green-500" />
             </div>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-zinc-400 text-sm">Members</p>
-                <p className="text-3xl font-bold text-green-500 mt-2">
+                <p className="text-zinc-400 text-xs sm:text-sm">Members</p>
+                <p className="text-2xl sm:text-3xl font-bold text-green-500 mt-1 sm:mt-2">
                   {stats.members}
                 </p>
               </div>
-              <Crown className="w-12 h-12 text-green-500" />
+              <Crown className="w-8 h-8 sm:w-12 sm:h-12 text-green-500" />
             </div>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-zinc-400 text-sm">Free Users</p>
-                <p className="text-3xl font-bold text-zinc-400 mt-2">
+                <p className="text-zinc-400 text-xs sm:text-sm">Free Users</p>
+                <p className="text-2xl sm:text-3xl font-bold text-zinc-400 mt-1 sm:mt-2">
                   {stats.free}
                 </p>
               </div>
-              <UserX className="w-12 h-12 text-zinc-500" />
+              <UserX className="w-8 h-8 sm:w-12 sm:h-12 text-zinc-500" />
             </div>
           </div>
         </div>
@@ -193,25 +181,26 @@ export default function AdminPage() {
         {/* Users Table */}
         {isAdmin && (
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
-            <div className="p-6 border-b border-zinc-800">
-              <h2 className="text-xl font-bold text-white mb-4">
+            <div className="p-4 sm:p-6 border-b border-zinc-800">
+              <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">
                 Manage Users
               </h2>
 
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
                 <input
                   type="text"
                   placeholder="Search by name or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-zinc-800 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-zinc-800 text-white text-sm sm:text-base rounded-lg py-2 sm:py-3 pl-9 sm:pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-zinc-800 border-b border-zinc-700">
                   <tr>
@@ -305,6 +294,80 @@ export default function AdminPage() {
                     ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-zinc-800">
+              {filteredUsers
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((u) => (
+                  <div key={u.uid} className="p-4 hover:bg-zinc-800/50">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 bg-zinc-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="w-5 h-5 text-zinc-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-white font-medium truncate">
+                            {u.displayName}
+                          </p>
+                          {u.role === "admin" && (
+                            <span className="text-xs text-purple-400 flex-shrink-0">
+                              Admin
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-zinc-400 text-sm truncate">
+                          {u.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          u.accountType === "membership"
+                            ? "bg-green-500/20 text-green-500"
+                            : "bg-zinc-700 text-zinc-400"
+                        }`}
+                      >
+                        {u.accountType}
+                      </span>
+                      <span className="text-zinc-400 text-xs">
+                        {new Date(u.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {u.uid !== user.uid && (
+                      <div className="flex gap-2">
+                        {u.accountType === "free" ? (
+                          <button
+                            onClick={() =>
+                              handleUpdateAccountType(u.uid, "membership")
+                            }
+                            disabled={processingUser === u.uid}
+                            className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 text-white rounded text-sm font-medium transition flex items-center justify-center gap-1"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            Upgrade
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              handleUpdateAccountType(u.uid, "free")
+                            }
+                            disabled={processingUser === u.uid}
+                            className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-zinc-700 text-white rounded text-sm font-medium transition flex items-center justify-center gap-1"
+                          >
+                            <UserX className="w-4 h-4" />
+                            Downgrade
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
 
             <Pagination

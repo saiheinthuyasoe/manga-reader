@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Home, Settings, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Loading from "@/components/Loading";
@@ -14,9 +14,11 @@ import { Chapter } from "@/types/manga";
 export default function ReadPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading, hasMembership } = useAuth();
   const mangaId = params.mangaId as string;
   const chapterId = params.chapterId as string;
+  const langFromUrl = searchParams.get("lang") as "EN" | "MM" | null;
 
   const [manga, setManga] = useState<{ id: string; title: string } | null>(
     null
@@ -110,8 +112,10 @@ export default function ReadPage() {
             langs.push("MM");
           setAvailableLanguages(langs);
 
-          // Set default language to first available
-          if (langs.length > 0) {
+          // Set language from URL parameter if valid, otherwise use first available
+          if (langFromUrl && langs.includes(langFromUrl)) {
+            setSelectedLanguage(langFromUrl);
+          } else if (langs.length > 0) {
             setSelectedLanguage(langs[0]);
           }
         } else {

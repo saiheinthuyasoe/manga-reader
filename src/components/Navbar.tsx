@@ -14,6 +14,9 @@ import {
   Languages,
   ChevronDown,
   Coins,
+  History,
+  ShoppingBag,
+  BookPlus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -220,6 +223,37 @@ export default function Navbar() {
                       {t("profile")}
                     </Link>
 
+                    {!isAdmin && (
+                      <>
+                        <Link
+                          href="/transactions"
+                          className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-700 hover:text-white transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <History className="w-4 h-4" />
+                          Transaction History
+                        </Link>
+
+                        <Link
+                          href="/purchases"
+                          className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-700 hover:text-white transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <ShoppingBag className="w-4 h-4" />
+                          Purchase History
+                        </Link>
+
+                        <Link
+                          href="/request-manga"
+                          className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-700 hover:text-white transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <BookPlus className="w-4 h-4" />
+                          Request Manga
+                        </Link>
+                      </>
+                    )}
+
                     {isAdmin && (
                       <>
                         <Link
@@ -245,6 +279,30 @@ export default function Navbar() {
                         >
                           <Users className="w-4 h-4" />
                           {t("manageUsers")}
+                        </Link>
+                        <Link
+                          href="/admin/transactions"
+                          className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <History className="w-4 h-4" />
+                          Transactions
+                        </Link>
+                        <Link
+                          href="/admin/purchases"
+                          className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <ShoppingBag className="w-4 h-4" />
+                          Purchases
+                        </Link>
+                        <Link
+                          href="/admin/manga-requests"
+                          className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <BookPlus className="w-4 h-4" />
+                          Manga Requests
                         </Link>
                       </>
                     )}
@@ -375,6 +433,37 @@ export default function Navbar() {
                     {t("profile")}
                   </Link>
 
+                  {!isAdmin && (
+                    <>
+                      <Link
+                        href="/transactions"
+                        className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <History className="w-4 h-4" />
+                        Transaction History
+                      </Link>
+
+                      <Link
+                        href="/purchases"
+                        className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        Purchase History
+                      </Link>
+
+                      <Link
+                        href="/request-manga"
+                        className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <BookPlus className="w-4 h-4" />
+                        Request Manga
+                      </Link>
+                    </>
+                  )}
+
                   {isAdmin && (
                     <>
                       <Link
@@ -400,6 +489,30 @@ export default function Navbar() {
                       >
                         <Users className="w-4 h-4" />
                         {t("manageUsers")}
+                      </Link>
+                      <Link
+                        href="/admin/transactions"
+                        className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-800 transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <History className="w-4 h-4" />
+                        Transactions
+                      </Link>
+                      <Link
+                        href="/admin/purchases"
+                        className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-800 transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        Purchases
+                      </Link>
+                      <Link
+                        href="/admin/manga-requests"
+                        className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-800 transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <BookPlus className="w-4 h-4" />
+                        Manga Requests
                       </Link>
                     </>
                   )}

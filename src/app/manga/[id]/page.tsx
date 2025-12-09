@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Manga, Chapter } from "@/types/manga";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, addDoc, collection } from "firebase/firestore";
 import BookmarkButton from "@/components/BookmarkButton";
 import RatingComponent from "@/components/RatingComponent";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -69,6 +69,7 @@ export default function MangaDetailPage({
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [views, setViews] = useState(0);
   const [viewCounted, setViewCounted] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<"EN" | "MM">("EN");
 
   useEffect(() => {
     const fetchManga = async () => {
@@ -148,10 +149,45 @@ export default function MangaDetailPage({
 
     setPurchasing(chapterId);
     try {
+      if (!manga) {
+        alert("Manga not loaded");
+        return;
+      }
+      const chapter = manga.chapters.find((ch) => ch.id === chapterId);
+      if (!chapter) {
+        alert("Chapter not found");
+        return;
+      }
+
       const userRef = doc(db, "users", user.uid);
       const newCoins = (user.coins || 0) - coinPrice;
       const purchasedChapters = [...(user.purchasedChapters || []), chapterId];
 
+      // Create coin transaction record
+      await addDoc(collection(db, "coinTransactions"), {
+        userId: user.uid,
+        type: "purchase",
+        amount: -coinPrice,
+        balance: newCoins,
+        description: `Purchased ${manga.title} - Chapter ${chapter.chapterNumber}`,
+        chapterId: chapterId,
+        mangaId: manga.id,
+        createdAt: new Date(),
+      });
+
+      // Create purchase history record
+      await addDoc(collection(db, "purchaseHistory"), {
+        userId: user.uid,
+        chapterId: chapterId,
+        mangaId: manga.id,
+        mangaTitle: manga.title,
+        chapterNumber: chapter.chapterNumber,
+        chapterTitle: chapter.title,
+        coinPrice: coinPrice,
+        purchasedAt: new Date(),
+      });
+
+      // Update user's coins and purchased chapters
       await updateDoc(userRef, {
         coins: newCoins,
         purchasedChapters: purchasedChapters,
@@ -283,7 +319,7 @@ export default function MangaDetailPage({
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
               {manga.chapters && manga.chapters.length > 0 ? (
                 <Link
-                  href={`/read/${manga.id}/${manga.chapters[0].id}`}
+                  href={`/read/${manga.id}/${manga.chapters[0].id}?lang=${selectedLanguage}`}
                   className="px-6 sm:px-8 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition text-center text-sm sm:text-base"
                 >
                   {t("readNow")}
@@ -315,124 +351,168 @@ export default function MangaDetailPage({
 
         {/* Chapters List */}
         <div className="mt-8 sm:mt-12 bg-zinc-900 rounded-lg p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
-            {t("chapters")}
-          </h2>
-          <div className="grid gap-2">
-            {manga.chapters.map((chapter) => {
-              const isAccessible = canAccessChapter(chapter);
-              const needsPurchase =
-                !chapter.isFree &&
-                !hasMembership &&
-                !user?.purchasedChapters?.includes(chapter.id);
-              const coinPrice = chapter.coinPrice || 0;
-
-              return (
-                <div
-                  key={chapter.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-zinc-800 rounded-lg gap-2 sm:gap-0"
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              {t("chapters")}
+            </h2>
+            {/* Language Selector */}
+            <div className="flex items-center gap-3">
+              <span className="text-zinc-400 text-sm font-medium">
+                Language:
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedLanguage("EN")}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                    selectedLanguage === "EN"
+                      ? "bg-green-600 text-white"
+                      : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                  }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1">
-                    <span className="text-green-500 font-semibold text-sm sm:text-base">
-                      {t("chapter")} {chapter.chapterNumber}
-                    </span>
-                    <span className="text-white text-sm sm:text-base line-clamp-1">
-                      {chapter.title}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-zinc-400">
-                    <div className="flex items-center gap-2">
-                      {chapter.pagesEN && chapter.pagesEN.length > 0 && (
-                        <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
-                          EN
-                        </span>
-                      )}
-                      {chapter.pagesMM && chapter.pagesMM.length > 0 && (
-                        <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-semibold">
-                          MM
-                        </span>
-                      )}
-                      {chapter.isFree && (
-                        <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
-                          FREE
-                        </span>
-                      )}
-                      {needsPurchase && coinPrice > 0 && (
-                        <span className="flex items-center gap-1 px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded text-xs font-semibold">
-                          <Coins className="w-3 h-3" />
-                          {coinPrice}
-                        </span>
-                      )}
-                      {!isAccessible && coinPrice === 0 && (
-                        <span className="flex items-center gap-1 px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-semibold">
-                          <Crown className="w-3 h-3" />
-                          Member Only
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {chapter.publishedAt
-                          ? (() => {
-                              const date = chapter.publishedAt;
-                              // Handle Firebase Timestamp
-                              if (
-                                typeof date === "object" &&
-                                date !== null &&
-                                "seconds" in date
-                              ) {
-                                return new Date(
-                                  (date as { seconds: number }).seconds * 1000
-                                ).toLocaleDateString();
-                              }
-                              // Handle regular Date or date string
-                              return new Date(date).toLocaleDateString();
-                            })()
-                          : "Not set"}
+                  English
+                </button>
+                <button
+                  onClick={() => setSelectedLanguage("MM")}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                    selectedLanguage === "MM"
+                      ? "bg-purple-600 text-white"
+                      : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                  }`}
+                >
+                  Myanmar
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-2">
+            {manga.chapters
+              .filter((chapter) => {
+                // Filter chapters based on selected language
+                if (selectedLanguage === "EN") {
+                  return chapter.pagesEN && chapter.pagesEN.length > 0;
+                } else {
+                  return chapter.pagesMM && chapter.pagesMM.length > 0;
+                }
+              })
+              .map((chapter) => {
+                const isAccessible = canAccessChapter(chapter);
+                const needsPurchase =
+                  !chapter.isFree &&
+                  !hasMembership &&
+                  !user?.purchasedChapters?.includes(chapter.id);
+                const coinPrice = chapter.coinPrice || 0;
+
+                return (
+                  <div
+                    key={chapter.id}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-zinc-800 rounded-lg gap-2 sm:gap-0"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1">
+                      <span className="text-green-500 font-semibold text-sm sm:text-base">
+                        {t("chapter")} {chapter.chapterNumber}
+                      </span>
+                      <span className="text-white text-sm sm:text-base line-clamp-1">
+                        {chapter.title}
                       </span>
                     </div>
-
-                    {/* Action Button */}
-                    <div>
-                      {isAccessible ? (
-                        <Link
-                          href={`/read/${manga.id}/${chapter.id}`}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition"
-                        >
-                          Read
-                        </Link>
-                      ) : needsPurchase && coinPrice > 0 ? (
-                        <button
-                          onClick={() =>
-                            handlePurchaseChapter(chapter.id, coinPrice)
-                          }
-                          disabled={purchasing === chapter.id}
-                          className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-zinc-700 text-white rounded text-xs font-semibold transition flex items-center gap-1"
-                        >
-                          {purchasing === chapter.id ? (
-                            "Purchasing..."
-                          ) : (
-                            <>
-                              <Coins className="w-3 h-3" />
-                              Buy {coinPrice}
-                            </>
+                    <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-zinc-400">
+                      <div className="flex items-center gap-2">
+                        {/* Show only selected language badge */}
+                        {selectedLanguage === "EN" &&
+                          chapter.pagesEN &&
+                          chapter.pagesEN.length > 0 && (
+                            <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
+                              EN
+                            </span>
                           )}
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          className="px-4 py-2 bg-zinc-700 text-zinc-400 rounded text-xs font-semibold cursor-not-allowed flex items-center gap-1"
-                        >
-                          <Lock className="w-3 h-3" />
-                          Locked
-                        </button>
-                      )}
+                        {selectedLanguage === "MM" &&
+                          chapter.pagesMM &&
+                          chapter.pagesMM.length > 0 && (
+                            <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-semibold">
+                              MM
+                            </span>
+                          )}
+                        {chapter.isFree && (
+                          <span className="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-semibold">
+                            FREE
+                          </span>
+                        )}
+                        {needsPurchase && coinPrice > 0 && (
+                          <span className="flex items-center gap-1 px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded text-xs font-semibold">
+                            <Coins className="w-3 h-3" />
+                            {coinPrice}
+                          </span>
+                        )}
+                        {!isAccessible && coinPrice === 0 && (
+                          <span className="flex items-center gap-1 px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-semibold">
+                            <Crown className="w-3 h-3" />
+                            Member Only
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {chapter.publishedAt
+                            ? (() => {
+                                const date = chapter.publishedAt;
+                                // Handle Firebase Timestamp
+                                if (
+                                  typeof date === "object" &&
+                                  date !== null &&
+                                  "seconds" in date
+                                ) {
+                                  return new Date(
+                                    (date as { seconds: number }).seconds * 1000
+                                  ).toLocaleDateString();
+                                }
+                                // Handle regular Date or date string
+                                return new Date(date).toLocaleDateString();
+                              })()
+                            : "Not set"}
+                        </span>
+                      </div>
+
+                      {/* Action Button */}
+                      <div>
+                        {isAccessible ? (
+                          <Link
+                            href={`/read/${manga.id}/${chapter.id}?lang=${selectedLanguage}`}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition"
+                          >
+                            Read
+                          </Link>
+                        ) : needsPurchase && coinPrice > 0 ? (
+                          <button
+                            onClick={() =>
+                              handlePurchaseChapter(chapter.id, coinPrice)
+                            }
+                            disabled={purchasing === chapter.id}
+                            className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-zinc-700 text-white rounded text-xs font-semibold transition flex items-center gap-1"
+                          >
+                            {purchasing === chapter.id ? (
+                              "Purchasing..."
+                            ) : (
+                              <>
+                                <Coins className="w-3 h-3" />
+                                Buy {coinPrice}
+                              </>
+                            )}
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            className="px-4 py-2 bg-zinc-700 text-zinc-400 rounded text-xs font-semibold cursor-not-allowed flex items-center gap-1"
+                          >
+                            <Lock className="w-3 h-3" />
+                            Locked
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       </div>
