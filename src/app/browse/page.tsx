@@ -39,7 +39,6 @@ function BrowseContent() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [mangas, setMangas] = useState<Manga[]>([]);
-  const [filteredMangas, setFilteredMangas] = useState<Manga[]>([]);
   const [loadingMangas, setLoadingMangas] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string>("All");
@@ -70,13 +69,15 @@ function BrowseContent() {
     ),
   ];
 
-  // Set search query from URL parameter
+  // Set search query from URL parameter (only on mount)
   useEffect(() => {
     const searchFromUrl = searchParams.get("search");
     if (searchFromUrl) {
-      setSearchQuery(searchFromUrl);
+      // Only set if not already set
+      setSearchQuery((prev) => prev || searchFromUrl);
     }
-  }, [searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -98,7 +99,6 @@ function BrowseContent() {
           };
         }) as Manga[];
         setMangas(mangasList);
-        setFilteredMangas(mangasList);
         setLoadingMangas(false);
       },
       (error) => {
@@ -109,43 +109,40 @@ function BrowseContent() {
     return () => unsubscribe();
   }, []);
 
-  // Filter mangas based on search, genre, and status
-  useEffect(() => {
-    let filtered = mangas;
-
+  // Derive filteredMangas from state instead of using setState in effect
+  const filteredMangas = mangas.filter((manga) => {
     // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (manga) =>
-          manga.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          manga.author.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    if (
+      searchQuery &&
+      !(
+        manga.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        manga.author.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    ) {
+      return false;
     }
-
     // Filter by genre
-    if (selectedGenre !== "All") {
-      filtered = filtered.filter((manga) =>
-        manga.genres.includes(selectedGenre)
-      );
+    if (selectedGenre !== "All" && !manga.genres.includes(selectedGenre)) {
+      return false;
     }
-
-    // Filter by status (case-insensitive, trimmed)
-    if (selectedStatus !== "All") {
-      const normalizedSelectedStatus = selectedStatus.toLowerCase().trim();
-      filtered = filtered.filter(
-        (manga) =>
-          (manga.status || "").toLowerCase().trim() === normalizedSelectedStatus
-      );
+    // Filter by status
+    if (
+      selectedStatus !== "All" &&
+      (manga.status || "").toLowerCase().trim() !==
+        selectedStatus.toLowerCase().trim()
+    ) {
+      return false;
     }
-
     // Filter by type
-    if (selectedType !== "All") {
-      filtered = filtered.filter((manga) => manga.type?.includes(selectedType));
+    if (selectedType !== "All" && !manga.type?.includes(selectedType)) {
+      return false;
     }
-
-    setFilteredMangas(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [searchQuery, selectedGenre, selectedStatus, selectedType, mangas]);
+    return true;
+  });
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedGenre, selectedStatus, selectedType]);
 
   if (loading || loadingMangas) {
     return <Loading />;
