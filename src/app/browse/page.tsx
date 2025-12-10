@@ -54,10 +54,22 @@ function BrowseContent() {
     ...new Set(mangas.flatMap((manga) => manga.genres)),
   ];
 
-  // Get all unique types from mangas
+  // Get all unique types from mangas, splitting comma-separated values
   const allTypes = [
     "All",
-    ...new Set(mangas.flatMap((manga) => manga.type || [])),
+    ...Array.from(
+      new Set(
+        mangas
+          .flatMap((manga) =>
+            (manga.type || []).flatMap((t) =>
+              typeof t === "string"
+                ? t.split(",").map((s) => s.trim())
+                : []
+            )
+          )
+          .filter((t) => t)
+      )
+    ),
   ];
 
   // Set search query from URL parameter

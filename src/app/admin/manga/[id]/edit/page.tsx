@@ -23,6 +23,7 @@ export default function EditMangaPage() {
     author: "",
     artist: "",
     status: "ongoing" as "ongoing" | "completed" | "hiatus",
+    type: "Manga",
     genres: "",
     coverImage: "",
     bannerImage: "",
@@ -63,6 +64,7 @@ export default function EditMangaPage() {
         author: manga.author,
         artist: manga.artist || "",
         status: manga.status,
+        type: Array.isArray(manga.type) ? manga.type.join(", ") : (manga.type || "Manga"),
         genres: manga.genres.join(", "),
         coverImage: manga.coverImage,
         bannerImage: manga.bannerImage || "",
@@ -99,6 +101,10 @@ export default function EditMangaPage() {
         author: formData.author,
         artist: formData.artist || formData.author,
         status: formData.status,
+        type: formData.type
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t),
         genres: formData.genres
           .split(",")
           .map((g) => g.trim())
@@ -268,8 +274,23 @@ export default function EditMangaPage() {
               </div>
             </div>
 
-            {/* Status & Genres */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Type, Status & Genres */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Type * (comma separated)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, type: e.target.value })
+                  }
+                  className="w-full bg-zinc-800 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="e.g., Manga, Manhwa, Manhua, Comic"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Status *
