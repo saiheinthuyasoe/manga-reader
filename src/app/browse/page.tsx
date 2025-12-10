@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen } from "lucide-react";
+import { BookOpen, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Loading from "@/components/Loading";
@@ -132,9 +132,13 @@ function BrowseContent() {
       );
     }
 
-    // Filter by status
+    // Filter by status (case-insensitive, trimmed)
     if (selectedStatus !== "All") {
-      filtered = filtered.filter((manga) => manga.status === selectedStatus);
+      const normalizedSelectedStatus = selectedStatus.toLowerCase().trim();
+      filtered = filtered.filter(
+        (manga) =>
+          (manga.status || "").toLowerCase().trim() === normalizedSelectedStatus
+      );
     }
 
     // Filter by type
@@ -165,75 +169,91 @@ function BrowseContent() {
 
         {/* Filters */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
-            <div>
-              <label className="text-sm text-zinc-400 mb-2 block">
-                {t("search")}
-              </label>
-              <input
-                type="text"
-                placeholder={t("searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
-              />
-            </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
+              {/* Search */}
+              <div>
+                <label className="text-sm text-zinc-400 mb-2 block">
+                  {t("search")}
+                </label>
+                <input
+                  type="text"
+                  placeholder={t("searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+                />
+              </div>
 
-            {/* Type Filter */}
-            <div>
-              <label className="text-sm text-zinc-400 mb-2 block">
-                {t("type")}
-              </label>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
-                aria-label="Filter by type"
-              >
-                {allTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Type Filter */}
+              <div>
+                <label className="text-sm text-zinc-400 mb-2 block">
+                  {t("type")}
+                </label>
+                <select
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+                  aria-label="Filter by type"
+                >
+                  {allTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Genre Filter */}
-            <div>
-              <label className="text-sm text-zinc-400 mb-2 block">
-                {t("genre")}
-              </label>
-              <select
-                value={selectedGenre}
-                onChange={(e) => setSelectedGenre(e.target.value)}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
-                aria-label="Filter by genre"
-              >
-                {allGenres.map((genre) => (
-                  <option key={genre} value={genre}>
-                    {genre}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Genre Filter */}
+              <div>
+                <label className="text-sm text-zinc-400 mb-2 block">
+                  {t("genre")}
+                </label>
+                <select
+                  value={selectedGenre}
+                  onChange={(e) => setSelectedGenre(e.target.value)}
+                  className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+                  aria-label="Filter by genre"
+                >
+                  {allGenres.map((genre) => (
+                    <option key={genre} value={genre}>
+                      {genre}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Status Filter */}
-            <div>
-              <label className="text-sm text-zinc-400 mb-2 block">
-                {t("status")}
-              </label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
-                aria-label="Filter by status"
-              >
-                <option value="All">{t("all")}</option>
-                <option value="Ongoing">{t("ongoing")}</option>
-                <option value="Completed">{t("completed")}</option>
-              </select>
+              {/* Status Filter */}
+              <div>
+                <label className="text-sm text-zinc-400 mb-2 block">
+                  {t("status")}
+                </label>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+                  aria-label="Filter by status"
+                >
+                  <option value="All">{t("all")}</option>
+                  <option value="Ongoing">{t("ongoing")}</option>
+                  <option value="Completed">{t("completed")}</option>
+                </select>
+              </div>
             </div>
+            {/* Reset Filters Button */}
+            <button
+              type="button"
+              className="flex items-center justify-center px-3 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-zinc-300 text-sm font-medium transition mt-4 md:mt-6"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedGenre("All");
+                setSelectedStatus("All");
+                setSelectedType("All");
+              }}
+              aria-label="Reset filters"
+            >
+              <RotateCcw className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Active Filters Info */}
