@@ -62,9 +62,7 @@ function BrowseContent() {
         mangas
           .flatMap((manga) =>
             (manga.type || []).flatMap((t) =>
-              typeof t === "string"
-                ? t.split(",").map((s) => s.trim())
-                : []
+              typeof t === "string" ? t.split(",").map((s) => s.trim()) : []
             )
           )
           .filter((t) => t)

@@ -64,7 +64,9 @@ export default function EditMangaPage() {
         author: manga.author,
         artist: manga.artist || "",
         status: manga.status,
-        type: Array.isArray(manga.type) ? manga.type.join(", ") : (manga.type || "Manga"),
+        type: Array.isArray(manga.type)
+          ? manga.type.join(", ")
+          : manga.type || "Manga",
         genres: manga.genres.join(", "),
         coverImage: manga.coverImage,
         bannerImage: manga.bannerImage || "",

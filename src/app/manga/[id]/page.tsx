@@ -394,6 +394,15 @@ export default function MangaDetailPage({
                   return chapter.pagesMM && chapter.pagesMM.length > 0;
                 }
               })
+              .sort((a, b) => {
+                // Sort chapters by chapterNumber ascending
+                // If chapterNumber is missing, treat as 0
+                const numA =
+                  typeof a.chapterNumber === "number" ? a.chapterNumber : 0;
+                const numB =
+                  typeof b.chapterNumber === "number" ? b.chapterNumber : 0;
+                return numA - numB;
+              })
               .map((chapter) => {
                 const isAccessible = canAccessChapter(chapter);
                 const needsPurchase =
