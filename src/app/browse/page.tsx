@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, RotateCcw } from "lucide-react";
@@ -79,9 +79,9 @@ function BrowseContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    const fetchMangas = async () => {
-      try {
-        const mangasSnapshot = await getDocs(collection(db, "mangas"));
+    const unsubscribe = onSnapshot(
+      collection(db, "mangas"),
+      (mangasSnapshot) => {
         const mangasList = mangasSnapshot.docs.map((doc) => {
           const data = doc.data();
           // Chapters are stored as an array in the manga document
@@ -91,25 +91,22 @@ function BrowseContent() {
             .sort((a, b) => b.chapterNumber - a.chapterNumber)
             .slice(0, 3);
 
-          console.log(`Manga ${doc.id} chapters:`, latestChapters);
-
           return {
             id: doc.id,
             ...data,
             chapters: latestChapters,
           };
         }) as Manga[];
-        console.log("Fetched mangas with chapters:", mangasList);
         setMangas(mangasList);
         setFilteredMangas(mangasList);
-      } catch (error) {
+        setLoadingMangas(false);
+      },
+      (error) => {
         console.error("Error fetching mangas:", error);
-      } finally {
         setLoadingMangas(false);
       }
-    };
-
-    fetchMangas();
+    );
+    return () => unsubscribe();
   }, []);
 
   // Filter mangas based on search, genre, and status
