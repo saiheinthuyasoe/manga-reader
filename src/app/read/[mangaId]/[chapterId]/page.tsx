@@ -40,7 +40,7 @@ export default function ReadPage() {
   const [customZoom, setCustomZoom] = useState(100);
   const [scrollDirection, setScrollDirection] = useState<
     "horizontal" | "vertical"
-  >("horizontal");
+  >("vertical");
 
   const settingsRef = useRef<HTMLDivElement>(null);
 
@@ -494,7 +494,7 @@ export default function ReadPage() {
       ) : (
         <div className="pt-20 pb-8">
           <div className="max-w-5xl mx-auto px-4">
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-0">
               {currentPages.length > 0 ? (
                 currentPages.map((page, index) => (
                   <Image

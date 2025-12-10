@@ -127,7 +127,7 @@ export async function deleteChapterFromManga(
   if (!mangaSnap.exists()) return;
   const data = mangaSnap.data();
   const chapters = (data.chapters || []).filter(
-    (ch: any) => ch.id !== chapterId
+    (ch: { id: string }) => ch.id !== chapterId
   );
   await updateDoc(mangaDoc, { chapters });
 }

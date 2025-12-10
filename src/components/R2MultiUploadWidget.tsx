@@ -169,7 +169,7 @@ export default function R2MultiUploadWidget({
                 onClick={() => onRemove(index)}
                 className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700 transition"
                 aria-label={`Remove ${language} page ${index + 1}`}
-                style={{ opacity: '1' }}
+                style={{ opacity: "1" }}
               >
                 <X className="w-4 h-4" />
               </button>

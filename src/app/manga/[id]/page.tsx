@@ -69,7 +69,7 @@ export default function MangaDetailPage({
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [views, setViews] = useState(0);
   const [viewCounted, setViewCounted] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<"EN" | "MM">("EN");
+  const [selectedLanguage, setSelectedLanguage] = useState<"EN" | "MM">("MM");
 
   useEffect(() => {
     const fetchManga = async () => {
