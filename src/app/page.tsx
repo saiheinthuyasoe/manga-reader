@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import HomeSections from "./HomeSections";
 
 // Define BeforeInstallPromptEvent type if not available
 type BeforeInstallPromptEvent = Event & {
@@ -104,6 +105,8 @@ export default function Home() {
           </div>
         </div>
       </div>
+      {/* Manga Sections */}
+      <HomeSections />
     </div>
   );
 }
