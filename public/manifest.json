@@ -1,6 +1,6 @@
 {
-  "name": "Manga Reader",
-  "short_name": "Manga",
+  "name": "BuuTee Channel",
+  "short_name": "BuuTee Channel",
   "description": "Read thousands of manga titles for free. Updated daily with the latest chapters.",
   "start_url": "/",
   "display": "standalone",
