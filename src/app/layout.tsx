@@ -18,14 +18,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MangaReader - Read Manga Online Free",
+  title: "BuuTee Channel",
   description:
     "Read thousands of manga titles for free. Updated daily with the latest chapters.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Manga Reader",
+    title: "BuuTee Channel",
   },
 };
 
