@@ -1,25 +1,42 @@
 "use client";
 
 import { useState, useRef } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
 import { ImagePlus, X, Loader2 } from "lucide-react";
 
-interface R2MultiUploadWidgetProps {
+type R2MultiUploadWidgetProps = {
   folder: string;
   values: string[];
   onSuccess: (urls: string[]) => void;
   onRemove: (index: number) => void;
+  onReorder?: (newOrder: string[]) => void;
   label?: string;
   language?: "EN" | "MM";
-}
+};
 
 export default function R2MultiUploadWidget({
   folder,
   values,
   onSuccess,
   onRemove,
+  onReorder,
   label = "Upload Images",
   language = "EN",
 }: R2MultiUploadWidgetProps) {
+  // Drag and drop reorder handler
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination || result.destination.index === result.source.index)
+      return;
+    const reordered = Array.from(values);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+    if (onReorder) onReorder(reordered);
+  };
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
@@ -149,33 +166,59 @@ export default function R2MultiUploadWidget({
         )}
       </button>
 
-      {/* Preview Grid */}
+      {/* Preview Grid with Drag-and-Drop */}
       {values.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {values.map((page, index) => (
-            <div key={index} className="relative group">
-              <img
-                src={page}
-                alt={`${language} Page ${index + 1}`}
-                className="w-full h-40 sm:h-48 object-cover rounded-lg"
-              />
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="image-grid" direction="horizontal">
+            {(provided: import("@hello-pangea/dnd").DroppableProvided) => (
               <div
-                className={`absolute top-2 left-2 px-2 py-1 bg-${colorClass}-600 rounded text-xs text-white font-semibold`}
+                className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
               >
-                {language} {index + 1}
+                {values.map((page, index) => (
+                  <Draggable key={page} draggableId={page} index={index}>
+                    {(
+                      dragProvided: import("@hello-pangea/dnd").DraggableProvided,
+                      dragSnapshot: import("@hello-pangea/dnd").DraggableStateSnapshot
+                    ) => (
+                      <div
+                        ref={dragProvided.innerRef}
+                        {...dragProvided.draggableProps}
+                        {...dragProvided.dragHandleProps}
+                        className={`relative group ${
+                          dragSnapshot.isDragging ? "z-10" : ""
+                        }`}
+                        style={dragProvided.draggableProps.style}
+                      >
+                        <img
+                          src={page}
+                          alt={`${language} Page ${index + 1}`}
+                          className="w-full h-40 sm:h-48 object-cover rounded-lg"
+                        />
+                        <div
+                          className={`absolute top-2 left-2 px-2 py-1 bg-${colorClass}-600 rounded text-xs text-white font-semibold`}
+                        >
+                          {language} {index + 1}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onRemove(index)}
+                          className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700 transition"
+                          aria-label={`Remove ${language} page ${index + 1}`}
+                          style={{ opacity: "1" }}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
               </div>
-              <button
-                type="button"
-                onClick={() => onRemove(index)}
-                className="absolute top-2 right-2 p-2 bg-red-600 rounded-full hover:bg-red-700 transition"
-                aria-label={`Remove ${language} page ${index + 1}`}
-                style={{ opacity: "1" }}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       )}
     </div>
   );

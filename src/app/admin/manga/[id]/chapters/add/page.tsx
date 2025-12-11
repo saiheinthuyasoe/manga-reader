@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { PlusCircle, Upload, X, ArrowLeft, ImagePlus } from "lucide-react";
+import { PlusCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMangaById, updateManga } from "@/lib/db";
@@ -34,6 +34,7 @@ export default function AddChapterPage() {
     }
   }, [user, isAdmin, isTranslator, router]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (user && (isAdmin || isTranslator)) {
       loadManga();
@@ -65,7 +66,7 @@ export default function AddChapterPage() {
       } else {
         setFormData((prev) => ({ ...prev, chapterNumber: "1" }));
       }
-    } catch (err) {
+    } catch {
       setError("Failed to load manga");
     } finally {
       setLoadingManga(false);
@@ -288,16 +289,23 @@ export default function AddChapterPage() {
             </div>
 
             {/* English Pages Upload */}
+
             <R2MultiUploadWidget
               folder={`manga-chapters/${params.id}/EN`}
               values={formData.pagesEN}
-              onSuccess={(urls) =>
+              onSuccess={(urls: string[]) =>
                 setFormData((prev) => ({
                   ...prev,
                   pagesEN: [...prev.pagesEN, ...urls],
                 }))
               }
               onRemove={removePageEN}
+              onReorder={(newOrder: string[]) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesEN: newOrder,
+                }))
+              }
               label="English Pages"
               language="EN"
             />
@@ -306,13 +314,19 @@ export default function AddChapterPage() {
             <R2MultiUploadWidget
               folder={`manga-chapters/${params.id}/MM`}
               values={formData.pagesMM}
-              onSuccess={(urls) =>
+              onSuccess={(urls: string[]) =>
                 setFormData((prev) => ({
                   ...prev,
                   pagesMM: [...prev.pagesMM, ...urls],
                 }))
               }
               onRemove={removePageMM}
+              onReorder={(newOrder: string[]) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesMM: newOrder,
+                }))
+              }
               label="Myanmar Pages"
               language="MM"
             />
