@@ -75,7 +75,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="relative h-[500px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1920&h=500&fit=crop"
+          src="https://pub-ce27b8af752c4ae98c3ec5e2d5a66454.r2.dev/manga-home-banner/home_banner.jpg"
           alt="Hero Banner"
           fill
           unoptimized
