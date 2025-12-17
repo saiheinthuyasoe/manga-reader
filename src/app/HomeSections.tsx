@@ -40,7 +40,11 @@ function Section({ title, items }: { title: string; items: Manga[] }) {
             href={`/manga/${manga.id}`}
             className="bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 hover:border-green-600 transition block"
           >
-            <div className="relative h-40 w-full">
+            {/*
+              For mobile, use a taller aspect ratio (e.g., 3:4 or 2:3) for manga covers.
+              Use Tailwind's aspect-[ratio] utility for responsive aspect ratio.
+            */}
+            <div className="relative w-full aspect-[2/3] sm:aspect-[3/4] lg:aspect-[3/4]">
               <Image
                 src={manga.coverImage || "/no-cover.png"}
                 alt={manga.title}

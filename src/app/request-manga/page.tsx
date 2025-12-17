@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { MangaRequest } from "@/types/mangaRequest";
 import { BookPlus, Send, Clock, CheckCircle, XCircle } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 export default function RequestMangaPage() {
   const { user, loading } = useAuth();
@@ -26,6 +27,8 @@ export default function RequestMangaPage() {
   const [genre, setGenre] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [myRequests, setMyRequests] = useState<MangaRequest[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [loadingRequests, setLoadingRequests] = useState(true);
 
   useEffect(() => {
@@ -125,6 +128,12 @@ export default function RequestMangaPage() {
     return null;
   }
 
+  // Pagination logic for My Requests
+  const paginatedMyRequests = myRequests.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="min-h-screen bg-black text-white pt-20 pb-12">
       <div className="max-w-4xl mx-auto px-3 sm:px-4">
@@ -215,62 +224,76 @@ export default function RequestMangaPage() {
           </div>
 
           {myRequests.length > 0 ? (
-            <div className="divide-y divide-zinc-800">
-              {myRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="p-4 sm:p-6 hover:bg-zinc-800/50"
-                >
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base sm:text-lg mb-1">
-                        {request.mangaTitle}
-                      </h3>
-                      {request.author && (
-                        <p className="text-sm text-zinc-400">
-                          Author: {request.author}
-                        </p>
-                      )}
-                      {request.genre && (
-                        <p className="text-sm text-zinc-400">
-                          Genre: {request.genre}
-                        </p>
-                      )}
+            <>
+              <div className="divide-y divide-zinc-800">
+                {paginatedMyRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="p-4 sm:p-6 hover:bg-zinc-800/50"
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base sm:text-lg mb-1">
+                          {request.mangaTitle}
+                        </h3>
+                        {request.author && (
+                          <p className="text-sm text-zinc-400">
+                            Author: {request.author}
+                          </p>
+                        )}
+                        {request.genre && (
+                          <p className="text-sm text-zinc-400">
+                            Genre: {request.genre}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(request.status)}
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                            request.status
+                          )}`}
+                        >
+                          {request.status.toUpperCase()}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(request.status)}
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          request.status
-                        )}`}
-                      >
-                        {request.status.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
 
-                  {request.description && (
-                    <p className="text-sm text-zinc-400 mb-3 line-clamp-2">
-                      {request.description}
-                    </p>
-                  )}
-
-                  {request.adminNotes && (
-                    <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 mb-3">
-                      <p className="text-xs font-semibold text-zinc-400 mb-1">
-                        Admin Notes:
+                    {request.description && (
+                      <p className="text-sm text-zinc-400 mb-3 line-clamp-2">
+                        {request.description}
                       </p>
-                      <p className="text-sm text-white">{request.adminNotes}</p>
-                    </div>
-                  )}
+                    )}
 
-                  <p className="text-xs text-zinc-500">
-                    Submitted: {request.createdAt.toLocaleDateString()} at{" "}
-                    {request.createdAt.toLocaleTimeString()}
-                  </p>
-                </div>
-              ))}
-            </div>
+                    {request.adminNotes && (
+                      <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 mb-3">
+                        <p className="text-xs font-semibold text-zinc-400 mb-1">
+                          Admin Notes:
+                        </p>
+                        <p className="text-sm text-white">
+                          {request.adminNotes}
+                        </p>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-zinc-500">
+                      Submitted: {request.createdAt.toLocaleDateString()} at{" "}
+                      {request.createdAt.toLocaleTimeString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {/* Pagination for My Requests */}
+              {myRequests.length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(myRequests.length / itemsPerPage)}
+                  onPageChange={setCurrentPage}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={myRequests.length}
+                />
+              )}
+            </>
           ) : (
             <div className="p-8 sm:p-12 text-center">
               <BookPlus className="w-12 h-12 text-zinc-600 mx-auto mb-4" />

@@ -226,6 +226,15 @@ export default function Navbar() {
                     {!isAdmin && (
                       <>
                         <Link
+                          href="/buy-coin"
+                          className="flex items-center gap-2 px-4 py-2 text-green-400 hover:bg-zinc-700 hover:text-white transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Coins className="w-4 h-4" />
+                          Buy Coin
+                        </Link>
+
+                        <Link
                           href="/transactions"
                           className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-700 hover:text-white transition"
                           onClick={() => setShowUserMenu(false)}
@@ -279,6 +288,14 @@ export default function Navbar() {
                         >
                           <Users className="w-4 h-4" />
                           {t("manageUsers")}
+                        </Link>
+                        <Link
+                          href="/admin/coin-packages"
+                          className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Coins className="w-4 h-4" />
+                          Coin Packages
                         </Link>
                         <Link
                           href="/admin/transactions"
@@ -435,6 +452,14 @@ export default function Navbar() {
 
                   {!isAdmin && (
                     <>
+                      <Link
+                        href="/buy-coin"
+                        className="flex items-center gap-2 px-4 py-2 text-green-400 hover:bg-zinc-800 hover:text-white transition"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        <Coins className="w-4 h-4" />
+                        Buy Coin
+                      </Link>
                       <Link
                         href="/transactions"
                         className="flex items-center gap-2 px-4 py-2 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"

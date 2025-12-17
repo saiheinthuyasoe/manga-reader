@@ -11,6 +11,7 @@ import {
   Settings,
   Home,
   BookPlus,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -36,6 +37,12 @@ const navItems: NavItem[] = [
     label: "Manage Users",
     href: "/admin/users",
     icon: Users,
+    adminOnly: true,
+  },
+  {
+    label: "Coin Packages",
+    href: "/admin/coin-packages",
+    icon: Coins,
     adminOnly: true,
   },
   {

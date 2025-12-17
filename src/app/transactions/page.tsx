@@ -17,11 +17,14 @@ import {
 import { CoinTransaction } from "@/types/transaction";
 import Loading from "@/components/Loading";
 import Link from "next/link";
+import Pagination from "@/components/Pagination";
 
 export default function TransactionHistoryPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
   const [loadingData, setLoadingData] = useState(true);
   const [creatingTest, setCreatingTest] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -131,6 +134,12 @@ export default function TransactionHistoryPage() {
     return amount > 0 ? "text-green-400" : "text-red-400";
   };
 
+  // Pagination logic
+  const paginatedTransactions = transactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="min-h-screen bg-black pt-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -167,13 +176,6 @@ export default function TransactionHistoryPage() {
                 </span>
               </div>
             </div>
-            <button
-              onClick={createTestTransaction}
-              disabled={creatingTest}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 text-white rounded-lg text-xs sm:text-sm font-semibold transition w-full sm:w-auto"
-            >
-              {creatingTest ? "Creating..." : "Create Test Transaction"}
-            </button>
           </div>
         </div>
 
@@ -217,7 +219,7 @@ export default function TransactionHistoryPage() {
           </div>
         ) : !error ? (
           <div className="space-y-2 sm:space-y-3">
-            {transactions.map((transaction) => (
+            {paginatedTransactions.map((transaction) => (
               <div
                 key={transaction.id}
                 className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 sm:p-4 hover:border-zinc-700 transition"
@@ -259,6 +261,16 @@ export default function TransactionHistoryPage() {
                 </div>
               </div>
             ))}
+            {/* Pagination for user transactions */}
+            {transactions.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(transactions.length / itemsPerPage)}
+                onPageChange={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={transactions.length}
+              />
+            )}
           </div>
         ) : null}
       </div>

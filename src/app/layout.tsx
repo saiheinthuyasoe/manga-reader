@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import FooterWrapper from "@/components/FooterWrapper";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -47,7 +47,7 @@ export default function RootLayout({
           <LanguageProvider>
             <Navbar />
             {children}
-            <Footer />
+            <FooterWrapper />
           </LanguageProvider>
         </AuthProvider>
         <SpeedInsights />

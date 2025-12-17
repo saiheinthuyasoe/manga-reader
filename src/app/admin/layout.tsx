@@ -11,7 +11,9 @@ export default function AdminLayout({
     <div className="flex">
       <AdminSidebar />
       {/* Desktop: ml-64 for sidebar, Mobile: no margin but pb-20 for bottom nav */}
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 md:ml-64 pb-20 md:pb-0 min-h-screen">
+        {children}
+      </main>
     </div>
   );
 }
