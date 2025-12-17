@@ -64,7 +64,7 @@ export default function CoinPackageAdminPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-2 sm:px-6 pt-20">
+    <div className="max-w-4xl mx-auto py-10 px-2 sm:px-6 pt-20 pb-28 sm:pb-10">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
           <span className="inline-block w-2 h-6 bg-blue-500 rounded-sm mr-2" />

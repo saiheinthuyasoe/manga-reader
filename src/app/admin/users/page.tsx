@@ -411,7 +411,7 @@ export default function ManageUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pt-20 pb-12">
+    <div className="min-h-screen bg-black text-white pt-20 pb-28 sm:pb-12">
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
           <div className="flex items-center gap-2 sm:gap-3">

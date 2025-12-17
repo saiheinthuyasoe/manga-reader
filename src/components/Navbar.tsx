@@ -372,7 +372,7 @@ export default function Navbar() {
         {showMobileMenu && (
           <div
             ref={mobileMenuRef}
-            className="md:hidden border-t border-zinc-800 py-4"
+            className="md:hidden border-t border-zinc-800 py-4 pb-32 max-h-[calc(100vh-4rem)] overflow-y-auto"
           >
             {/* Mobile Search */}
             <div className="px-4 mb-4">
