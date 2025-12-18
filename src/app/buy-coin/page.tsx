@@ -88,7 +88,7 @@ export default function BuyCoinPage() {
 
   const handleBuy = (pkg: CoinPackage) => {
     setSelected(pkg);
-    setEmail("");
+    setEmail(user?.email || "");
     setReceipt(null);
     setSuccess(false);
   };
@@ -146,7 +146,7 @@ export default function BuyCoinPage() {
                 {pkg.coins} Coins
               </div>
               <div className="text-zinc-400 text-sm mt-1">
-                ${pkg.price.toFixed(2)}
+                {pkg.price.toLocaleString()} MMK
               </div>
             </div>
             <button
@@ -173,14 +173,14 @@ export default function BuyCoinPage() {
             </h2>
             <div className="flex flex-col items-center mb-4">
               <Image
-                src="/qr-demo.png"
+                src="/payment_qr.jpg"
                 alt="QR Code"
                 width={160}
                 height={160}
                 className="rounded bg-white p-2"
               />
               <span className="text-zinc-400 text-xs mt-2">
-                Scan to pay ${selected.price.toFixed(2)}
+                Scan to pay {selected.price.toLocaleString()} MMK
               </span>
             </div>
             {success ? (
@@ -274,7 +274,7 @@ export default function BuyCoinPage() {
                         {req.coins}
                       </td>
                       <td className="py-2 px-2 text-zinc-200 whitespace-nowrap">
-                        ${req.price}
+                        {req.price.toLocaleString()} MMK
                       </td>
                       <td className="py-2 px-2 capitalize text-zinc-200 whitespace-nowrap">
                         <span
@@ -363,9 +363,11 @@ export default function BuyCoinPage() {
                       </span>
                     </span>
                     <span>
-                      Price:{" "}
-                      <span className="font-medium text-white">
-                        ${req.price}
+                      <span>
+                        Price:{" "}
+                        <span className="font-medium text-white">
+                          {req.price.toLocaleString()} MMK
+                        </span>
                       </span>
                     </span>
                   </div>

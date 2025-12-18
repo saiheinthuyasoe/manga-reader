@@ -12,6 +12,7 @@ import {
   Home,
   BookPlus,
   Coins,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -23,6 +24,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  {
+    label: "Member Packages",
+    href: "/admin/member-packages",
+    icon: Crown,
+    adminOnly: true,
+  },
   {
     label: "Dashboard",
     href: "/admin",

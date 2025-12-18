@@ -113,10 +113,10 @@ export default function CoinPackageAdminPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm text-zinc-400">Price ($)</label>
+              <label className="text-sm text-zinc-400">Price (MMK)</label>
               <input
                 type="number"
-                placeholder="Price ($)"
+                placeholder="Price (MMK)"
                 value={form.price}
                 onChange={(e) =>
                   setForm({ ...form, price: Number(e.target.value) })
@@ -172,7 +172,7 @@ export default function CoinPackageAdminPage() {
                 <tr className="bg-zinc-800">
                   <th className="py-3 px-4 rounded-l-lg">Name</th>
                   <th className="py-3 px-4">Coins</th>
-                  <th className="py-3 px-4">Price ($)</th>
+                  <th className="py-3 px-4">Price (MMK)</th>
                   <th className="py-3 px-4 rounded-r-lg">Actions</th>
                 </tr>
               </thead>
@@ -183,7 +183,9 @@ export default function CoinPackageAdminPage() {
                       {pkg.name}
                     </td>
                     <td className="py-2 px-4 text-zinc-200">{pkg.coins}</td>
-                    <td className="py-2 px-4 text-zinc-200">{pkg.price}</td>
+                    <td className="py-2 px-4 text-zinc-200">
+                      {pkg.price.toLocaleString()} MMK
+                    </td>
                     <td className="py-2 px-4 flex gap-2">
                       <button
                         onClick={() => handleEdit(pkg)}

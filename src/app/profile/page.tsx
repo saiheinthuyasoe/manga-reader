@@ -297,12 +297,20 @@ export default function ProfilePage() {
             {/* Actions */}
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               {isAdmin && (
-                <button
-                  onClick={() => router.push("/admin")}
-                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition text-sm sm:text-base"
-                >
-                  Admin Dashboard
-                </button>
+                <>
+                  <button
+                    onClick={() => router.push("/admin")}
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition text-sm sm:text-base"
+                  >
+                    Admin Dashboard
+                  </button>
+                  <button
+                    onClick={() => router.push("/admin/member-packages")}
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold transition text-sm sm:text-base"
+                  >
+                    Member Packages
+                  </button>
+                </>
               )}
               <button
                 onClick={handleSignOut}

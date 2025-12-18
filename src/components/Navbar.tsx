@@ -226,6 +226,14 @@ export default function Navbar() {
                     {!isAdmin && (
                       <>
                         <Link
+                          href="/buy-membership"
+                          className="flex items-center gap-2 px-4 py-2 text-yellow-400 hover:bg-zinc-700 hover:text-white transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Crown className="w-4 h-4" />
+                          Buy Membership
+                        </Link>
+                        <Link
                           href="/buy-coin"
                           className="flex items-center gap-2 px-4 py-2 text-green-400 hover:bg-zinc-700 hover:text-white transition"
                           onClick={() => setShowUserMenu(false)}

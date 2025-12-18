@@ -31,14 +31,20 @@ import {
 } from "firebase/firestore";
 import { PurchaseHistory } from "@/types/transaction";
 import { CoinBuyRequest } from "@/types/coin-buy-request";
+import { MemberBuyRequest } from "@/types/member-buy-request";
 import Loading from "@/components/Loading";
 import Pagination from "@/components/Pagination";
 import Link from "next/link";
 
 export default function AdminPurchasesPage() {
-  const [tab, setTab] = useState<"purchases" | "buy-coin">("purchases");
+  // All logic and hooks must be inside the component
+  const [tab, setTab] = useState<"purchases" | "buy-coin" | "member-requests">(
+    "purchases"
+  );
   const [buyRequests, setBuyRequests] = useState<CoinBuyRequest[]>([]);
   const [buyRequestsPage, setBuyRequestsPage] = useState(1);
+  const [memberRequests, setMemberRequests] = useState<MemberBuyRequest[]>([]);
+  const [memberRequestsPage, setMemberRequestsPage] = useState(1);
   const router = useRouter();
   const { user, isAdmin, loading } = useAuth();
   const [purchases, setPurchases] = useState<PurchaseHistory[]>([]);
@@ -55,6 +61,9 @@ export default function AdminPurchasesPage() {
   const [deleting, setDeleting] = useState(false);
   const [showBuyReqDeleteModal, setShowBuyReqDeleteModal] = useState(false);
   const [buyReqToDelete, setBuyReqToDelete] = useState<string | null>(null);
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [grantReq, setGrantReq] = useState<MemberBuyRequest | null>(null);
+  const [grantDuration, setGrantDuration] = useState<number>(30);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -104,6 +113,20 @@ export default function AdminPurchasesPage() {
             createdAt: doc.data().createdAt?.toDate() || new Date(),
           })) as CoinBuyRequest[];
           setBuyRequests(buyReqs);
+        });
+        // Fetch membership requests (real-time)
+        const memberReqQ = query(
+          collection(db, "membershipRequests"),
+          orderBy("createdAt", "desc"),
+          limit(500)
+        );
+        onSnapshot(memberReqQ, (snap) => {
+          const memberReqs = snap.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          })) as MemberBuyRequest[];
+          setMemberRequests(memberReqs);
         });
         setError(null);
       } catch (error) {
@@ -204,7 +227,7 @@ export default function AdminPurchasesPage() {
 
   return (
     <div className="min-h-screen bg-black pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-40 md:pb-12">
         {/* Tabs */}
         <div className="flex gap-2 mb-8 border-b border-zinc-800">
           <button
@@ -227,7 +250,448 @@ export default function AdminPurchasesPage() {
           >
             Buy Coin Requests
           </button>
+          <button
+            className={`px-4 py-2 font-semibold text-sm border-b-2 transition ${
+              tab === "member-requests"
+                ? "border-blue-500 text-blue-400"
+                : "border-transparent text-zinc-400 hover:text-white"
+            }`}
+            onClick={() => setTab("member-requests")}
+          >
+            Member Requests
+          </button>
         </div>
+        {/* Member Requests Tab */}
+        {tab === "member-requests" && (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-zinc-900 border border-zinc-800 rounded-lg p-2 sm:p-4 md:p-6">
+              <h2 className="text-lg sm:text-xl font-bold text-blue-400 mb-4 sm:mb-6 flex items-center gap-2">
+                <User className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" /> Member
+                Requests
+              </h2>
+              <div className="w-full overflow-x-auto md:overflow-x-visible">
+                <table className="w-full text-left border-separate border-spacing-y-2 text-xs sm:text-sm md:text-base">
+                  <thead>
+                    <tr className="bg-zinc-800">
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 rounded-l-lg">
+                        User
+                      </th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4">Package</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4">Duration</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4">Price</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4">Email</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4">Receipt</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4">Status</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4">
+                        Requested At
+                      </th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 rounded-r-lg">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {memberRequests.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          className="text-zinc-500 py-6 text-center"
+                        >
+                          No member requests yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      memberRequests
+                        .slice(
+                          (memberRequestsPage - 1) * itemsPerPage,
+                          memberRequestsPage * itemsPerPage
+                        )
+                        .map((req) => (
+                          <tr
+                            key={req.id}
+                            className="hover:bg-zinc-800 transition"
+                          >
+                            <td className="py-2 px-4 font-medium text-zinc-100">
+                              {userMap[req.userId]?.name || req.userId}
+                            </td>
+                            <td className="py-2 px-4 text-zinc-200">
+                              {req.packageName}
+                            </td>
+                            <td className="py-2 px-4 text-zinc-200">
+                              {req.duration}
+                            </td>
+                            <td className="py-2 px-4 text-zinc-200">
+                              {req.price?.toLocaleString()} MMK
+                            </td>
+                            <td className="py-2 px-4 text-zinc-200">
+                              {req.email}
+                            </td>
+                            <td className="py-2 px-4 text-zinc-200">
+                              {req.receiptUrl ? (
+                                <a
+                                  href={req.receiptUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 underline"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                <span className="text-zinc-500">-</span>
+                              )}
+                            </td>
+                            <td className="py-2 px-4 text-zinc-200 capitalize">
+                              {req.status}
+                            </td>
+                            <td className="py-2 px-4 text-zinc-200">
+                              {req.createdAt instanceof Date
+                                ? req.createdAt.toLocaleString()
+                                : "-"}
+                            </td>
+                            <td className="py-2 px-4 flex gap-2">
+                              {req.status === "pending" && (
+                                <>
+                                  <button
+                                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition"
+                                    onClick={() => {
+                                      setGrantReq(req);
+                                      setGrantDuration(30);
+                                      setShowGrantModal(true);
+                                    }}
+                                  >
+                                    Grant
+                                  </button>
+                                  <button
+                                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold"
+                                    onClick={async () => {
+                                      if (
+                                        !confirm(
+                                          `Reject membership request for ${
+                                            userMap[req.userId]?.name ||
+                                            req.userId
+                                          } (${req.email})?`
+                                        )
+                                      )
+                                        return;
+                                      await updateDoc(
+                                        doc(db, "membershipRequests", req.id),
+                                        { status: "rejected" }
+                                      );
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                className="bg-zinc-700 hover:bg-zinc-800 text-white px-3 py-1 rounded text-xs font-semibold"
+                                onClick={async () => {
+                                  if (
+                                    !confirm(
+                                      "Are you sure you want to delete this request?"
+                                    )
+                                  )
+                                    return;
+                                  await deleteDoc(
+                                    doc(db, "membershipRequests", req.id)
+                                  );
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+                {/* Pagination for Member Requests */}
+                {memberRequests.length > itemsPerPage && (
+                  <div className="mt-4">
+                    <button
+                      className="px-3 py-1 bg-zinc-800 text-white rounded mr-2 disabled:opacity-50"
+                      onClick={() =>
+                        setMemberRequestsPage((p) => Math.max(1, p - 1))
+                      }
+                      disabled={memberRequestsPage === 1}
+                    >
+                      Prev
+                    </button>
+                    <span className="text-zinc-300">
+                      Page {memberRequestsPage} of{" "}
+                      {Math.ceil(memberRequests.length / itemsPerPage)}
+                    </span>
+                    <button
+                      className="px-3 py-1 bg-zinc-800 text-white rounded ml-2 disabled:opacity-50"
+                      onClick={() =>
+                        setMemberRequestsPage((p) =>
+                          Math.min(
+                            Math.ceil(memberRequests.length / itemsPerPage),
+                            p + 1
+                          )
+                        )
+                      }
+                      disabled={
+                        memberRequestsPage ===
+                        Math.ceil(memberRequests.length / itemsPerPage)
+                      }
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              <h2 className="text-lg font-bold text-blue-400 mb-4 flex items-center gap-2">
+                <User className="w-5 h-5 text-blue-400" /> Member Requests
+              </h2>
+              {memberRequests.length === 0 ? (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-center text-zinc-500">
+                  No member requests yet.
+                </div>
+              ) : (
+                memberRequests
+                  .slice(
+                    (memberRequestsPage - 1) * itemsPerPage,
+                    memberRequestsPage * itemsPerPage
+                  )
+                  .map((req) => (
+                    <div
+                      key={req.id}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-zinc-100">
+                          {userMap[req.userId]?.name || req.userId}
+                        </span>
+                        <span className="capitalize text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-300">
+                          {req.status}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
+                        <span>
+                          Package:{" "}
+                          <span className="font-medium text-white">
+                            {req.packageName}
+                          </span>
+                        </span>
+                        <span>
+                          Duration:{" "}
+                          <span className="font-medium text-white">
+                            {req.duration}
+                          </span>
+                        </span>
+                        <span>
+                          Price:{" "}
+                          <span className="font-medium text-white">
+                            {req.price?.toLocaleString()} MMK
+                          </span>
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-400 break-all">
+                        Email: {req.email}
+                      </div>
+                      <div className="text-xs text-zinc-400">
+                        Requested:{" "}
+                        {req.createdAt instanceof Date
+                          ? req.createdAt.toLocaleString()
+                          : "-"}
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        {req.receiptUrl ? (
+                          <a
+                            href={req.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 underline text-xs"
+                          >
+                            Receipt
+                          </a>
+                        ) : (
+                          <span className="text-zinc-500 text-xs">
+                            No Receipt
+                          </span>
+                        )}
+                        {req.status === "pending" && (
+                          <>
+                            <button
+                              className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-semibold"
+                              onClick={() => {
+                                setGrantReq(req);
+                                setGrantDuration(30);
+                                setShowGrantModal(true);
+                              }}
+                            >
+                              Grant
+                            </button>
+                            <button
+                              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold"
+                              onClick={async () => {
+                                if (
+                                  !confirm(
+                                    `Reject membership request for ${
+                                      userMap[req.userId]?.name || req.userId
+                                    } (${req.email})?`
+                                  )
+                                )
+                                  return;
+                                await updateDoc(
+                                  doc(db, "membershipRequests", req.id),
+                                  { status: "rejected" }
+                                );
+                              }}
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        <button
+                          className="bg-zinc-700 hover:bg-zinc-800 text-white px-2 py-1 rounded text-xs font-semibold"
+                          onClick={async () => {
+                            if (
+                              !confirm(
+                                "Are you sure you want to delete this request?"
+                              )
+                            )
+                              return;
+                            await deleteDoc(
+                              doc(db, "membershipRequests", req.id)
+                            );
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+              {/* Pagination for Member Requests (Mobile) */}
+              {memberRequests.length > itemsPerPage && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    className="px-3 py-1 bg-zinc-800 text-white rounded mr-2 disabled:opacity-50"
+                    onClick={() =>
+                      setMemberRequestsPage((p) => Math.max(1, p - 1))
+                    }
+                    disabled={memberRequestsPage === 1}
+                  >
+                    Prev
+                  </button>
+                  <span className="text-zinc-300 self-center">
+                    Page {memberRequestsPage} of{" "}
+                    {Math.ceil(memberRequests.length / itemsPerPage)}
+                  </span>
+                  <button
+                    className="px-3 py-1 bg-zinc-800 text-white rounded ml-2 disabled:opacity-50"
+                    onClick={() =>
+                      setMemberRequestsPage((p) =>
+                        Math.min(
+                          Math.ceil(memberRequests.length / itemsPerPage),
+                          p + 1
+                        )
+                      )
+                    }
+                    disabled={
+                      memberRequestsPage ===
+                      Math.ceil(memberRequests.length / itemsPerPage)
+                    }
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Grant Membership Modal (Shared) */}
+            {showGrantModal && grantReq && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-md w-full">
+                  <h2 className="text-xl font-bold text-white mb-4">
+                    Grant Membership
+                  </h2>
+                  <div className="mb-4">
+                    <div className="text-zinc-300 mb-2">User:</div>
+                    <div className="font-semibold text-white">
+                      {userMap[grantReq.userId]?.name || grantReq.userId}
+                    </div>
+                    <div className="text-zinc-400 text-sm mb-4">
+                      {grantReq.email}
+                    </div>
+                    <div className="mb-2 text-zinc-300">
+                      Select Duration (days):
+                    </div>
+                    <div className="flex gap-2 mb-4 flex-wrap">
+                      {[7, 30, 90, 180, 365].map((d) => (
+                        <button
+                          key={d}
+                          className={`px-3 py-1 rounded font-semibold text-sm transition ${
+                            grantDuration === d
+                              ? "bg-blue-600 text-white"
+                              : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                          }`}
+                          onClick={() => setGrantDuration(d)}
+                        >
+                          {d}d
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-end mt-6">
+                    <button
+                      onClick={() => setShowGrantModal(false)}
+                      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                      onClick={async () => {
+                        try {
+                          await updateDoc(
+                            doc(db, "membershipRequests", grantReq.id),
+                            { status: "approved" }
+                          );
+                          const userRef = doc(db, "users", grantReq.userId);
+                          const updates: {
+                            accountType: string;
+                            membershipStartDate: Date;
+                            updatedAt: Date;
+                            membershipEndDate: Date | null;
+                          } = {
+                            accountType: "membership",
+                            membershipStartDate: new Date(),
+                            updatedAt: new Date(),
+                            membershipEndDate: null,
+                          };
+                          if (grantDuration > 0) {
+                            const endDate = new Date();
+                            endDate.setDate(endDate.getDate() + grantDuration);
+                            updates.membershipEndDate = endDate;
+                          } else {
+                            updates.membershipEndDate = null;
+                          }
+                          await updateDoc(userRef, updates);
+                          setShowGrantModal(false);
+                          setGrantReq(null);
+                          alert("Membership granted successfully!");
+                        } catch (error) {
+                          console.error("Error granting membership:", error);
+                          alert("Failed to grant membership");
+                        }
+                      }}
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
         {/* Removed chapter purchases table from buy coin package tab as requested */}
         {tab === "buy-coin" && (
@@ -526,9 +990,6 @@ export default function AdminPurchasesPage() {
                                 userId: userRef.id,
                                 type: "admin_add",
                                 amount: req.coins,
-                                balance: newBalance,
-                                description: `Admin approved buy coin request (${req.packageName})`,
-                                adminId: user?.uid || null,
                                 createdAt: new Date(),
                               });
                             }}

@@ -533,50 +533,85 @@ export default function ReadPage() {
         </div>
       )}
 
-      {/* Bottom Navigation */}
-      {scrollDirection === "horizontal" && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur-sm border-t border-zinc-800">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={prevPage}
-                disabled={currentPage === 1 && currentChapterIndex === 0}
-                className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </button>
+      {/* Bottom Navigation: Show chapter navigation always, page navigation only in horizontal mode */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur-sm border-t border-zinc-800">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+            {/* Previous Chapter */}
+            <button
+              onClick={() =>
+                currentChapterIndex > 0 &&
+                goToChapter(chapters[currentChapterIndex - 1].id)
+              }
+              disabled={currentChapterIndex === 0}
+              className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-2 py-2 sm:px-3 sm:py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-base"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden xs:inline">Prev Chapter</span>
+              <span className="inline xs:hidden">Prev</span>
+            </button>
 
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-zinc-400">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <input
-                  type="range"
-                  min="1"
-                  max={totalPages}
-                  value={currentPage}
-                  onChange={(e) => setCurrentPage(Number(e.target.value))}
-                  className="w-48"
-                  aria-label="Page slider"
-                />
-              </div>
+            {scrollDirection === "horizontal" && (
+              <>
+                {/* Previous Page */}
+                <button
+                  onClick={prevPage}
+                  disabled={currentPage === 1 && currentChapterIndex === 0}
+                  className="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-2 py-2 sm:px-3 sm:py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-base"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="hidden xs:inline">Prev Page</span>
+                  <span className="inline xs:hidden">Page -</span>
+                </button>
 
-              <button
-                onClick={nextPage}
-                disabled={
-                  currentPage === totalPages &&
-                  currentChapterIndex === chapters.length - 1
-                }
-                className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+                {/* Page Slider */}
+                <div className="flex flex-col items-center flex-1 min-w-[120px]">
+                  <span className="text-xs sm:text-sm text-zinc-400 mb-1">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <input
+                    type="range"
+                    min="1"
+                    max={totalPages}
+                    value={currentPage}
+                    onChange={(e) => setCurrentPage(Number(e.target.value))}
+                    className="w-full sm:w-48"
+                    aria-label="Page slider"
+                  />
+                </div>
+
+                {/* Next Page */}
+                <button
+                  onClick={nextPage}
+                  disabled={
+                    currentPage === totalPages &&
+                    currentChapterIndex === chapters.length - 1
+                  }
+                  className="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-2 py-2 sm:px-3 sm:py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-base"
+                >
+                  <span className="hidden xs:inline">Next Page</span>
+                  <span className="inline xs:hidden">Page +</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
+            )}
+
+            {/* Next Chapter */}
+            <button
+              onClick={() =>
+                currentChapterIndex < chapters.length - 1 &&
+                goToChapter(chapters[currentChapterIndex + 1].id)
+              }
+              disabled={currentChapterIndex === chapters.length - 1}
+              className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-2 py-2 sm:px-3 sm:py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-base"
+            >
+              <span className="hidden xs:inline">Next Chapter</span>
+              <span className="inline xs:hidden">Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
