@@ -298,14 +298,6 @@ export default function Navbar() {
                           {t("manageUsers")}
                         </Link>
                         <Link
-                          href="/admin/coin-packages"
-                          className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-700 transition"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <Coins className="w-4 h-4" />
-                          Coin Packages
-                        </Link>
-                        <Link
                           href="/admin/transactions"
                           className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-zinc-700 transition"
                           onClick={() => setShowUserMenu(false)}
