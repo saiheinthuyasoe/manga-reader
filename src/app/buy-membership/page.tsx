@@ -173,7 +173,7 @@ export default function BuyMembershipPage() {
     await firestoreDeleteDoc(docRef);
   }
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 pt-24 pb-12">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
         <Crown className="w-7 h-7 text-yellow-400" /> Buy Membership
       </h1>

@@ -172,12 +172,17 @@ export default function R2MultiUploadWidget({
           <Droppable droppableId="image-grid" direction="horizontal">
             {(provided: import("@hello-pangea/dnd").DroppableProvided) => (
               <div
-                className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+                className="mt-4 flex overflow-x-auto space-x-4 p-2"
+                style={{ touchAction: "pan-x" }}
                 ref={provided.innerRef}
                 {...provided.droppableProps}
               >
                 {values.map((page, index) => (
-                  <Draggable key={page} draggableId={page} index={index}>
+                  <Draggable
+                    key={`${page}-${index}`}
+                    draggableId={`${page}-${index}`}
+                    index={index}
+                  >
                     {(
                       dragProvided: import("@hello-pangea/dnd").DraggableProvided,
                       dragSnapshot: import("@hello-pangea/dnd").DraggableStateSnapshot
@@ -186,15 +191,18 @@ export default function R2MultiUploadWidget({
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
-                        className={`relative group ${
+                        className={`relative group flex-shrink-0 ${
                           dragSnapshot.isDragging ? "z-10" : ""
                         }`}
-                        style={dragProvided.draggableProps.style}
+                        style={{
+                          ...dragProvided.draggableProps.style,
+                          touchAction: "none",
+                        }}
                       >
                         <img
                           src={page}
                           alt={`${language} Page ${index + 1}`}
-                          className="w-full h-40 sm:h-48 object-cover rounded-lg"
+                          className="w-40 h-40 sm:h-48 object-cover rounded-lg"
                         />
                         <div
                           className={`absolute top-2 left-2 px-2 py-1 bg-${colorClass}-600 rounded text-xs text-white font-semibold`}

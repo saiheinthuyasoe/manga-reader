@@ -169,7 +169,7 @@ export default function EditChapterPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pt-20 pb-12">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="w-full mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -314,6 +314,12 @@ export default function EditChapterPage() {
                 }))
               }
               onRemove={removePageEN}
+              onReorder={(newOrder: string[]) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesEN: newOrder,
+                }))
+              }
               label="English Pages"
               language="EN"
             />
@@ -329,6 +335,12 @@ export default function EditChapterPage() {
                 }))
               }
               onRemove={removePageMM}
+              onReorder={(newOrder: string[]) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  pagesMM: newOrder,
+                }))
+              }
               label="Myanmar Pages"
               language="MM"
             />
