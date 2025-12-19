@@ -94,8 +94,7 @@ export default function MemberPackageAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this package?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this package?")) return;
     try {
       await deleteDoc(doc(db, "memberPackages", id));
       fetchPackages();
@@ -197,12 +196,8 @@ export default function MemberPackageAdminPage() {
             {memberPackages.map((pkg) => (
               <tr key={pkg.id} className="border-t border-zinc-800">
                 <td className="py-3 font-semibold text-white">{pkg.name}</td>
-                <td className="py-3">
-                  {isNaN(pkg.price) ? "N/A" : pkg.price.toLocaleString()} MMK
-                </td>
-                <td className="py-3">
-                  {isNaN(pkg.duration) ? "N/A" : `${pkg.duration}`}
-                </td>
+                <td className="py-3">{isNaN(pkg.price) ? "N/A" : `${pkg.price.toLocaleString()} MMK`}</td>
+                <td className="py-3">{isNaN(pkg.duration) ? "N/A" : `${pkg.duration} days`}</td>
                 <td className="py-3">
                   <button
                     onClick={() => handleOpenModal(pkg)}
@@ -269,7 +264,7 @@ export default function MemberPackageAdminPage() {
                   <label className="block text-zinc-300 mb-1">Duration</label>
                   <input
                     title="Duration"
-                    type="text"
+                    type="number"
                     name="duration"
                     value={form.duration}
                     onChange={handleFormChange}
