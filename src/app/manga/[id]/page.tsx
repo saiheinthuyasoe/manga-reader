@@ -70,6 +70,26 @@ export default function MangaDetailPage({
   const [views, setViews] = useState(0);
   const [viewCounted, setViewCounted] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<"EN" | "MM">("MM");
+  const [currentReadingChapterId, setCurrentReadingChapterId] = useState<
+    string | null
+  >(null);
+
+  // Load last read chapter from Firebase user document
+  useEffect(() => {
+    const fetchLastReadChapter = async () => {
+      if (!user) return;
+      const { id } = await params;
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        if (data.lastReadChapters && data.lastReadChapters[id]) {
+          setCurrentReadingChapterId(data.lastReadChapters[id]);
+        }
+      }
+    };
+    fetchLastReadChapter();
+  }, [user, params]);
 
   useEffect(() => {
     const fetchManga = async () => {
@@ -487,9 +507,26 @@ export default function MangaDetailPage({
                         {isAccessible ? (
                           <Link
                             href={`/read/${manga.id}/${chapter.id}?lang=${selectedLanguage}`}
-                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition"
+                            className={`px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition${
+                              currentReadingChapterId === chapter.id
+                                ? " ring-2 ring-purple-500"
+                                : ""
+                            }`}
+                            onClick={async () => {
+                              setCurrentReadingChapterId(chapter.id);
+                              if (user) {
+                                const userRef = doc(db, "users", user.uid);
+                                await updateDoc(userRef, {
+                                  [`lastReadChapters.${manga.id}`]: chapter.id,
+                                  updatedAt: new Date(),
+                                });
+                              }
+                            }}
                           >
-                            Read
+                            Read{" "}
+                            {currentReadingChapterId === chapter.id
+                              ? "(Current)"
+                              : ""}
                           </Link>
                         ) : needsPurchase && coinPrice > 0 ? (
                           <button

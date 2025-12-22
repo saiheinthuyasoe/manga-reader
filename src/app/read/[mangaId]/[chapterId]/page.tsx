@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Home, Settings, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Loading from "@/components/Loading";
 import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Chapter } from "@/types/manga";
 
 export default function ReadPage() {
@@ -162,6 +162,21 @@ export default function ReadPage() {
         }?lang=${selectedLanguage}`
       );
     }
+    // Update lastReadChapters in Firebase
+    if (user) {
+      const nextChapterId = chapters[currentChapterIndex + 1].id;
+      const userRef = doc(db, "users", user.uid);
+      updateDoc(userRef, {
+        [`lastReadChapters.${mangaId}`]: nextChapterId,
+        updatedAt: new Date(),
+      });
+    }
+    // Go to next chapter, preserve language
+    router.push(
+      `/read/${mangaId}/${
+        chapters[currentChapterIndex + 1].id
+      }?lang=${selectedLanguage}`
+    );
   };
 
   const prevPage = () => {
@@ -175,9 +190,32 @@ export default function ReadPage() {
         }?lang=${selectedLanguage}`
       );
     }
+    // Update lastReadChapters in Firebase
+    if (user) {
+      const prevChapterId = chapters[currentChapterIndex - 1].id;
+      const userRef = doc(db, "users", user.uid);
+      updateDoc(userRef, {
+        [`lastReadChapters.${mangaId}`]: prevChapterId,
+        updatedAt: new Date(),
+      });
+    }
+    // Go to previous chapter, preserve language
+    router.push(
+      `/read/${mangaId}/${
+        chapters[currentChapterIndex - 1].id
+      }?lang=${selectedLanguage}`
+    );
   };
 
   const goToChapter = (newChapterId: string) => {
+    // Update lastReadChapters in Firebase
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      updateDoc(userRef, {
+        [`lastReadChapters.${mangaId}`]: newChapterId,
+        updatedAt: new Date(),
+      });
+    }
     router.push(`/read/${mangaId}/${newChapterId}?lang=${selectedLanguage}`);
   };
 
