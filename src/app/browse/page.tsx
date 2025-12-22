@@ -35,7 +35,7 @@ interface Manga {
 }
 
 function BrowseContent() {
-  const { loading } = useAuth();
+  const { loading, user } = useAuth();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [mangas, setMangas] = useState<Manga[]>([]);
@@ -371,11 +371,28 @@ function BrowseContent() {
                               ? `/read/${manga.id}/${chapter.id}?lang=MM`
                               : `/read/${manga.id}/${chapter.id}`;
 
+                            const handleChapterClick = async (
+                              e: React.MouseEvent
+                            ) => {
+                              if (user) {
+                                // Update lastReadChapters in Firebase
+                                const { doc, updateDoc } = await import(
+                                  "firebase/firestore"
+                                );
+                                const userRef = doc(db, "users", user.uid);
+                                await updateDoc(userRef, {
+                                  [`lastReadChapters.${manga.id}`]: chapter.id,
+                                  updatedAt: new Date(),
+                                });
+                              }
+                            };
+
                             return (
                               <Link
                                 key={chapter.id}
                                 href={chapterHref}
                                 className="flex items-center gap-2 text-sm hover:text-green-500 transition"
+                                onClick={handleChapterClick}
                               >
                                 <BookOpen className="w-4 h-4 text-purple-500" />
                                 <span className="text-purple-500">
