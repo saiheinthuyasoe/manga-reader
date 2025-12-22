@@ -357,8 +357,10 @@ function BrowseContent() {
                       <div className="mt-auto space-y-2.5">
                         {manga.chapters && manga.chapters.length > 0 ? (
                           manga.chapters.map((chapter) => {
-                            const hasEN = chapter.pagesEN && chapter.pagesEN.length > 0;
-                            const hasMM = chapter.pagesMM && chapter.pagesMM.length > 0;
+                            const hasEN =
+                              chapter.pagesEN && chapter.pagesEN.length > 0;
+                            const hasMM =
+                              chapter.pagesMM && chapter.pagesMM.length > 0;
                             let langLabel = "";
                             if (hasEN && hasMM) langLabel = "[EN/MM]";
                             else if (hasEN) langLabel = "[EN]";
