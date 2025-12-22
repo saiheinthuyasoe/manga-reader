@@ -155,8 +155,12 @@ export default function ReadPage() {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     } else if (currentChapterIndex < chapters.length - 1) {
-      // Go to next chapter
-      router.push(`/read/${mangaId}/${chapters[currentChapterIndex + 1].id}`);
+      // Go to next chapter, preserve language
+      router.push(
+        `/read/${mangaId}/${
+          chapters[currentChapterIndex + 1].id
+        }?lang=${selectedLanguage}`
+      );
     }
   };
 
@@ -164,13 +168,17 @@ export default function ReadPage() {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     } else if (currentChapterIndex > 0) {
-      // Go to previous chapter
-      router.push(`/read/${mangaId}/${chapters[currentChapterIndex - 1].id}`);
+      // Go to previous chapter, preserve language
+      router.push(
+        `/read/${mangaId}/${
+          chapters[currentChapterIndex - 1].id
+        }?lang=${selectedLanguage}`
+      );
     }
   };
 
   const goToChapter = (newChapterId: string) => {
-    router.push(`/read/${mangaId}/${newChapterId}`);
+    router.push(`/read/${mangaId}/${newChapterId}?lang=${selectedLanguage}`);
   };
 
   const handleImageFitChange = (

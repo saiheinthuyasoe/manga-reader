@@ -357,19 +357,22 @@ function BrowseContent() {
                       <div className="mt-auto space-y-2.5">
                         {manga.chapters && manga.chapters.length > 0 ? (
                           manga.chapters.map((chapter) => {
-                            const hasEN =
-                              chapter.pagesEN && chapter.pagesEN.length > 0;
-                            const hasMM =
-                              chapter.pagesMM && chapter.pagesMM.length > 0;
+                            const hasEN = chapter.pagesEN && chapter.pagesEN.length > 0;
+                            const hasMM = chapter.pagesMM && chapter.pagesMM.length > 0;
                             let langLabel = "";
                             if (hasEN && hasMM) langLabel = "[EN/MM]";
                             else if (hasEN) langLabel = "[EN]";
                             else if (hasMM) langLabel = "[MM]";
 
+                            // Default to Myanmar language if available
+                            const chapterHref = hasMM
+                              ? `/read/${manga.id}/${chapter.id}?lang=MM`
+                              : `/read/${manga.id}/${chapter.id}`;
+
                             return (
                               <Link
                                 key={chapter.id}
-                                href={`/read/${manga.id}/${chapter.id}`}
+                                href={chapterHref}
                                 className="flex items-center gap-2 text-sm hover:text-green-500 transition"
                               >
                                 <BookOpen className="w-4 h-4 text-purple-500" />
